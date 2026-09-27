@@ -23,6 +23,16 @@ ESLint (`eslint-config-expo` + Prettier) and Prettier (with `prettier-plugin-org
 - `pnpm format:check` — verify formatting without writing.
 - Use `pnpm exec prettier <args>` for one-off Prettier runs, not `npx prettier` (`npx` always requires approval in this repo).
 
-## New File Rules
+## Development Rules
 
+- Performance is very important in this app as this will be used on low end android devices. Please make sure to keep performance as top priority in every iteration.
 - Every UI code must exist in src folder only. Which includes Components files, Utils, constants, types, hooks etc.
+- folder src/components/ui is for reusable components.
+- If a component grows more than 300 lines, create a folder for the component and break the component in smaller components, or move out util files in `<folder>/utils`, types in `<folder>/utils` types in `<folder>/types`
+- Please use tailwind css. Use React native StyleSheet only places where NativeWind does not provide support.
+
+## Testing rules
+
+- tests should exists adjacent to files
+- tests should focus on covering important flows and edge cases rather than number of lines and branches.
+- if a bug is reported, after fixing it, a test must be added so that it does not break again.

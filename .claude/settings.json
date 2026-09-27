@@ -120,7 +120,25 @@
       "Bash(pnpm run format)",
       "PowerShell(pnpm run format)",
       "Bash(pnpm run format:check)",
-      "PowerShell(pnpm run format:check)"
+      "PowerShell(pnpm run format:check)",
+      "Bash(pnpm lint)",
+      "PowerShell(pnpm lint)",
+      "Bash(pnpm run lint)",
+      "PowerShell(pnpm run lint)",
+      "Bash(pnpm lint:fix)",
+      "PowerShell(pnpm lint:fix)",
+      "Bash(pnpm run lint:fix)",
+      "PowerShell(pnpm run lint:fix)",
+      "Bash(pnpm test)",
+      "PowerShell(pnpm test)",
+      "Bash(pnpm run test)",
+      "PowerShell(pnpm run test)",
+      "Bash(pnpm exec eslint *)",
+      "PowerShell(pnpm exec eslint *)",
+      "Bash(pnpm exec jest *)",
+      "PowerShell(pnpm exec jest *)",
+      "Bash(pnpm exec tsc *)",
+      "PowerShell(pnpm exec tsc *)"
     ]
   },
   "enabledPlugins": {

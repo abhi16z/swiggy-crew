@@ -21,7 +21,13 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { FLICK_VELOCITY, PRESENT_MS, PROJECT_SECONDS, REDUCE_MOTION_MS } from './constants';
+import {
+  FLICK_VELOCITY,
+  PAN_TEST_ID,
+  PRESENT_MS,
+  PROJECT_SECONDS,
+  REDUCE_MOTION_MS,
+} from './constants';
 import type { BottomSheetProps, BottomSheetRef, BottomSheetSnap } from './types';
 import {
   closedOffset,
@@ -83,6 +89,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function
   const pan = useMemo(
     () =>
       Gesture.Pan()
+        .withTestId(PAN_TEST_ID)
         .maxPointers(1)
         .activeOffsetY([-10, 10])
         .failOffsetX([-24, 24])

@@ -1,0 +1,7 @@
+.expo/
+dist/
+web-build/
+ios/
+android/
+local/
+pnpm-lock.yaml

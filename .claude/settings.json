@@ -1,4 +1,40 @@
 {
+  "permissions": {
+    "deny": [
+      "Bash(git reset *)",
+      "PowerShell(git reset *)",
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(rm -Rf *)",
+      "Bash(rm -r -f *)",
+      "PowerShell(rm -rf *)",
+      "PowerShell(rm -fr *)",
+      "PowerShell(rm -r -force *)",
+      "PowerShell(Remove-Item -Recurse -Force *)",
+      "PowerShell(Remove-Item -Force -Recurse *)",
+      "Bash(npm install *)",
+      "Bash(npm i *)",
+      "PowerShell(npm install *)",
+      "PowerShell(npm i *)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm i *)",
+      "PowerShell(pnpm install *)",
+      "PowerShell(pnpm i *)"
+    ],
+    "ask": ["Bash(git *)", "PowerShell(git *)", "Bash(npx *)", "PowerShell(npx *)"],
+    "allow": [
+      "Bash(pnpm exec prettier *)",
+      "PowerShell(pnpm exec prettier *)",
+      "Bash(pnpm format)",
+      "PowerShell(pnpm format)",
+      "Bash(pnpm format:check)",
+      "PowerShell(pnpm format:check)",
+      "Bash(pnpm run format)",
+      "PowerShell(pnpm run format)",
+      "Bash(pnpm run format:check)",
+      "PowerShell(pnpm run format:check)"
+    ]
+  },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
   }

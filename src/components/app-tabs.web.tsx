@@ -12,6 +12,11 @@ export default function AppTabs() {
               <Text className="text-black dark:text-white">Home</Text>
             </Pressable>
           </TabTrigger>
+          <TabTrigger name="showcase" href="/showcase" asChild>
+            <Pressable className="p-5">
+              <Text className="text-black dark:text-white">Showcase</Text>
+            </Pressable>
+          </TabTrigger>
           <TabTrigger name="about" href="/about" asChild>
             <Pressable className="p-5">
               <Text className="text-black dark:text-white">About</Text>

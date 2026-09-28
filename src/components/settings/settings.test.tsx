@@ -22,7 +22,9 @@ describe('Settings', () => {
     await renderSettingsWithPanel();
 
     expect(screen.getByRole('switch', { name: 'Performance panel' })).toHaveProp('value', false);
-    expect(screen.queryByText('Performance HUD')).not.toBeOnTheScreen();
+    expect(
+      screen.queryByRole('button', { name: 'Expand performance panel' }),
+    ).not.toBeOnTheScreen();
   });
 
   it('shows and hides the app-wide performance panel from the switch', async () => {
@@ -30,10 +32,12 @@ describe('Settings', () => {
     const toggle = screen.getByRole('switch', { name: 'Performance panel' });
 
     await fireEvent(toggle, 'valueChange', true);
-    expect(await screen.findByText('Performance HUD')).toBeVisible();
+    expect(await screen.findByRole('button', { name: 'Expand performance panel' })).toBeVisible();
     expect(toggle).toHaveProp('value', true);
 
     await fireEvent(toggle, 'valueChange', false);
-    expect(screen.queryByText('Performance HUD')).not.toBeOnTheScreen();
+    expect(
+      screen.queryByRole('button', { name: 'Expand performance panel' }),
+    ).not.toBeOnTheScreen();
   });
 });

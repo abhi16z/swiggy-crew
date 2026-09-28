@@ -1,0 +1,54 @@
+# Static checks and unit tests only: no native build, no device or simulator.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+# A new push to the same branch or PR cancels the run it replaces.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: Lint, format, types
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.10.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: ESLint (also reports Prettier issues)
+        run: pnpm lint
+      - name: Prettier (files ESLint doesn't lint, e.g. Markdown, JSON, YAML)
+        run: pnpm format:check
+      - name: TypeScript
+        run: pnpm typecheck
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.10.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # `pnpm run`, not `pnpm test`: pnpm's built-in `test` rejects Jest's `--ci` flag.
+      - run: pnpm run test --ci

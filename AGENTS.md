@@ -21,6 +21,8 @@ ESLint (`eslint-config-expo` + Prettier) and Prettier (with `prettier-plugin-org
 - `pnpm lint:fix` — ESLint with auto-fix.
 - `pnpm format` — format all files with Prettier.
 - `pnpm format:check` — verify formatting without writing.
+- `pnpm typecheck` — TypeScript, no emit. Must pass too.
+- CI (`.github/workflows/ci.yml`) runs `lint`, `format:check`, `typecheck` and the unit tests on every PR and push to `master`.
 - Use `pnpm exec prettier <args>` for one-off Prettier runs, not `npx prettier` (`npx` always requires approval in this repo).
 
 ## Development Rules

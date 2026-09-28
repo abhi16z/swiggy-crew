@@ -3,7 +3,17 @@ import { resetApiKeyStore } from '@/lib/ai-settings/api-key-store';
 import { OpenRouterError, streamChat } from '@/lib/open-router';
 
 import { FLUSH_INTERVAL_MS } from './delta-buffer';
-import { clearChat, retryReply, sendMessage, stopReply, toHistory, useChatStore } from './store';
+import {
+  isStreaming,
+  openChat,
+  resetChats,
+  retryReply,
+  sendMessage,
+  startNewChat,
+  stopReply,
+  toHistory,
+  useChatStore,
+} from './store';
 import type { ChatMessage } from './types';
 
 jest.mock('@/lib/open-router', () => ({
@@ -34,13 +44,32 @@ function controlStream() {
   return stream;
 }
 
+function activeChat() {
+  const { chats, activeChatId } = useChatStore.getState();
+  return chats.find((chat) => chat.id === activeChatId);
+}
+
 function messages() {
-  return useChatStore.getState().messages;
+  return activeChat()?.messages ?? [];
+}
+
+function chatTitles() {
+  return useChatStore.getState().chats.map((chat) => chat.title);
 }
 
 async function flushAsync() {
   await Promise.resolve();
   await jest.advanceTimersByTimeAsync(FLUSH_INTERVAL_MS);
+}
+
+/** Sends a message and completes its reply with `answer`. */
+async function exchange(question: string, answer: string) {
+  const stream = controlStream();
+  const sent = sendMessage(question);
+  await flushAsync();
+  stream.options?.onDelta(answer);
+  stream.finish();
+  await sent;
 }
 
 beforeEach(async () => {
@@ -50,23 +79,24 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  clearChat();
+  resetChats();
   await resetApiKeyStore();
   jest.useRealTimers();
 });
 
 describe('chat store', () => {
-  it('shows the question and an empty streaming reply before the first token', async () => {
+  it('starts a chat with the first question and shows an empty streaming reply', async () => {
     controlStream();
 
     void sendMessage('  Best time for Serengeti?  ');
     await flushAsync();
 
+    expect(activeChat()?.title).toBe('Best time for Serengeti?');
     expect(messages()).toMatchObject([
       { role: 'user', content: 'Best time for Serengeti?', status: 'done' },
       { role: 'assistant', content: '', status: 'streaming' },
     ]);
-    expect(useChatStore.getState().streaming).toBe(true);
+    expect(isStreaming(activeChat())).toBe(true);
   });
 
   it('streams text into the reply progressively, then marks it done', async () => {
@@ -83,16 +113,11 @@ describe('chat store', () => {
     await sent;
 
     expect(messages()[1]).toMatchObject({ content: 'June to October.', status: 'done' });
-    expect(useChatStore.getState().streaming).toBe(false);
+    expect(isStreaming(activeChat())).toBe(false);
   });
 
-  it('sends the system prompt and earlier turns with a new question', async () => {
-    const first = controlStream();
-    const sent = sendMessage('Hi');
-    await flushAsync();
-    first.options?.onDelta('Hello!');
-    first.finish();
-    await sent;
+  it('sends the system prompt and earlier turns of the same chat with a new question', async () => {
+    await exchange('Hi', 'Hello!');
 
     const second = controlStream();
     void sendMessage('And food?');
@@ -106,7 +131,7 @@ describe('chat store', () => {
     ]);
   });
 
-  it('ignores a new message while a reply is still streaming', async () => {
+  it('ignores a new message while the chat is still replying', async () => {
     controlStream();
     void sendMessage('One');
     await flushAsync();
@@ -127,7 +152,7 @@ describe('chat store', () => {
     await sent;
 
     expect(messages()[1]).toMatchObject({ content: 'Partial', status: 'stopped' });
-    expect(useChatStore.getState().streaming).toBe(false);
+    expect(isStreaming(activeChat())).toBe(false);
   });
 
   it('shows why a reply failed and can retry it', async () => {
@@ -157,8 +182,90 @@ describe('chat store', () => {
 
     await sendMessage('Hi');
 
-    expect(messages()).toEqual([]);
+    expect(useChatStore.getState().chats).toEqual([]);
     expect(streamChat).not.toHaveBeenCalled();
+  });
+});
+
+describe('multiple chats in a session', () => {
+  it('keeps the earlier chat when a new chat is started, and lists the latest first', async () => {
+    await exchange('Serengeti?', 'Go in July.');
+
+    startNewChat();
+    expect(messages()).toEqual([]);
+    await exchange('Bodh Gaya?', 'Go in winter.');
+
+    expect(chatTitles()).toEqual(['Bodh Gaya?', 'Serengeti?']);
+  });
+
+  it('switches chats; a question sends only its own chat as history', async () => {
+    await exchange('Serengeti?', 'Go in July.');
+    const first = activeChat()!.id;
+    startNewChat();
+    await exchange('Bodh Gaya?', 'Go in winter.');
+
+    openChat(first);
+    expect(messages().map((message) => message.content)).toEqual(['Serengeti?', 'Go in July.']);
+
+    const next = controlStream();
+    void sendMessage('What to pack?');
+    await flushAsync();
+    expect(next.options?.messages).toEqual([
+      { role: 'system', content: 'SYSTEM' },
+      { role: 'user', content: 'Serengeti?' },
+      { role: 'assistant', content: 'Go in July.' },
+      { role: 'user', content: 'What to pack?' },
+    ]);
+    // Replying moves the chat back to the top of the list.
+    expect(chatTitles()).toEqual(['Serengeti?', 'Bodh Gaya?']);
+  });
+
+  it('keeps streaming a reply into its own chat after switching to another', async () => {
+    const stream = controlStream();
+    const sent = sendMessage('Serengeti?');
+    await flushAsync();
+    const first = activeChat()!.id;
+
+    startNewChat();
+    stream.options?.onDelta('Go in July.');
+    stream.finish();
+    await sent;
+
+    expect(messages()).toEqual([]);
+    openChat(first);
+    expect(messages()[1]).toMatchObject({ content: 'Go in July.', status: 'done' });
+  });
+
+  it('lets a new chat send while another chat is still replying', async () => {
+    controlStream();
+    void sendMessage('Serengeti?');
+    await flushAsync();
+
+    startNewChat();
+    controlStream();
+    void sendMessage('Bodh Gaya?');
+    await flushAsync();
+
+    expect(streamChat).toHaveBeenCalledTimes(2);
+    expect(useChatStore.getState().chats.every(isStreaming)).toBe(true);
+  });
+
+  it('stops only the open chat’s reply', async () => {
+    controlStream();
+    void sendMessage('Serengeti?');
+    await flushAsync();
+    const first = activeChat()!.id;
+    startNewChat();
+    const second = controlStream();
+    const sentSecond = sendMessage('Bodh Gaya?');
+    await flushAsync();
+
+    stopReply();
+    await sentSecond;
+
+    const firstChat = useChatStore.getState().chats.find((chat) => chat.id === first);
+    expect(second.options?.signal?.aborted).toBe(true);
+    expect(isStreaming(firstChat)).toBe(true);
   });
 });
 

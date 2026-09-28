@@ -8,7 +8,7 @@ import { streamChat } from '@/lib/open-router';
 
 import { AskCrewSheet } from '.';
 import { FLUSH_INTERVAL_MS } from './chat/delta-buffer';
-import { clearChat } from './chat/store';
+import { resetChats } from './chat/store';
 
 jest.mock('expo-haptics');
 
@@ -70,7 +70,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  clearChat();
+  resetChats();
   await resetApiKeyStore();
   jest.useRealTimers();
 });
@@ -128,6 +128,31 @@ describe('Ask Crew chat', () => {
     expect(screen.getByText('Day 1:')).toBeOnTheScreen();
     expect(screen.getByText('Stopped')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Send message' })).toBeOnTheScreen();
+  });
+
+  it('starts a new chat and switches back to the earlier one from All chats', async () => {
+    const user = userEvent.setup();
+    const first = controlStream();
+    await openSheet();
+    expect(screen.queryByRole('button', { name: 'All chats' })).not.toBeOnTheScreen();
+    await send('Serengeti?');
+    await act(async () => {
+      first.options?.onDelta('Go in July.');
+      first.finish();
+    });
+    await tick();
+
+    await user.press(screen.getByRole('button', { name: 'Start a new chat' }));
+    expect(screen.queryByText('Go in July.')).not.toBeOnTheScreen();
+
+    await user.press(screen.getByRole('button', { name: 'All chats' }));
+    expect(screen.getByText('All chats')).toBeOnTheScreen();
+    expect(screen.queryByLabelText('Message Crew')).not.toBeOnTheScreen();
+
+    await user.press(screen.getByRole('button', { name: 'Serengeti?. Go in July.' }));
+
+    expect(screen.getByText('Go in July.')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Message Crew')).toBeOnTheScreen();
   });
 
   it('points to Settings when no OpenRouter key is saved', async () => {

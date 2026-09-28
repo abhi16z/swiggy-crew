@@ -3,7 +3,13 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { getDraft, sendMessage, setDraft, stopReply, useChatStore } from '../chat/store';
+import {
+  getDraft,
+  sendMessage,
+  setDraft,
+  stopReply,
+  useActiveChatStreaming,
+} from '../chat/store';
 
 type ComposerProps = {
   enabled: boolean;
@@ -12,7 +18,7 @@ type ComposerProps = {
 };
 
 export function Composer({ enabled, onEngage }: ComposerProps) {
-  const streaming = useChatStore((state) => state.streaming);
+  const streaming = useActiveChatStreaming();
   const { bottom } = useSafeAreaInsets();
   const [text, setText] = useState(getDraft);
 

@@ -94,17 +94,17 @@ Chat with an OpenRouter model about the destinations in the feed. Replies stream
 | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `ask-crew-sheet/index.tsx`                    | Sheet wrapper. Passes the current snap to the body and dismisses the keyboard below full height.                                       |
 | `ask-crew-sheet/ask-crew-sheet-body.tsx`      | Layout: header, messages (or empty state / missing-key notice), composer in `BottomSheetFooter`.                                      |
-| `ask-crew-sheet/chat/store.ts`                | Session chat store (in memory, outside the body): messages, streaming flag, draft; `sendMessage`, `stopReply`, `retryReply`, `clearChat`. |
+| `ask-crew-sheet/chat/store.ts`                | Session chat store (in memory, outside the body): all chats of the session, the open chat, the draft; `sendMessage`, `stopReply`, `retryReply`, `startNewChat`, `openChat`. |
 | `ask-crew-sheet/chat/delta-buffer.ts`         | Batches streamed text to one UI update per 50 ms.                                                                                      |
 | `ask-crew-sheet/chat/system-prompt.ts`        | System prompt; lists the feed's destinations (`destinations.ts` fetches the feed JSON once per session, waits at most 3 s).             |
-| `ask-crew-sheet/components/*`                 | Header, inverted message list on `KeyboardChatScrollView`, bubbles (with the "Thinking…" indicator), composer on `KeyboardStickyView`. |
+| `ask-crew-sheet/components/*`                 | Slim header (icon buttons: All chats, new chat, close), chat list, inverted message list on `KeyboardChatScrollView`, bubbles (with the "Thinking…" indicator), composer on `KeyboardStickyView`. |
 | `src/components/settings/open-router/*`       | Settings: OpenRouter key (checked with `GET /key` before saving) and the searchable model list (all text chat models, ~390).           |
 
 Decisions taken:
 
 - Provider: OpenRouter's chat completions API with `stream: true`, read with `expo/fetch` (streams on SDK 57). Default model `anthropic/claude-opus-5`; the user picks another in Settings.
 - The key is stored with `expo-secure-store` (Keychain / Keystore). On web it is kept in memory only.
-- History lives for the app session, not across launches. Each request sends the last 20 messages.
+- Chats live for the app session, not across launches. "New chat" keeps the previous chat; "All chats" lists the session's chats (most recently used first) to switch between them. Each chat streams independently, so a reply keeps arriving in its own chat after switching away. Each request sends the last 20 messages of its chat.
 - Replies are plain text (the prompt asks for no Markdown), so no Markdown renderer is needed.
 
 **Must keep holding**

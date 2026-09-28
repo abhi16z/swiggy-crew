@@ -8,3 +8,10 @@ export type ChatMessage = {
   /** User-facing reason, set when `status` is `error`. */
   error?: string;
 };
+
+export type Chat = {
+  id: string;
+  /** The chat's first question, shown in the chat list. */
+  title: string;
+  messages: ChatMessage[];
+};

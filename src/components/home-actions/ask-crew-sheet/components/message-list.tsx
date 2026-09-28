@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { FlatList, type ListRenderItemInfo, type ScrollViewProps } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useChatStore } from '../chat/store';
+import { useActiveMessages } from '../chat/store';
 import type { ChatMessage } from '../chat/types';
 import { ChatScrollView } from './chat-scroll-view';
 import { MessageBubble } from './message-bubble';
@@ -20,7 +20,7 @@ function renderItem({ item }: ListRenderItemInfo<ChatMessage>) {
  * the composer and stays in view without scrolling on every update.
  */
 export function MessageList() {
-  const messages = useChatStore((state) => state.messages);
+  const messages = useActiveMessages();
   const { bottom } = useSafeAreaInsets();
   const newestFirst = useMemo(() => [...messages].reverse(), [messages]);
 

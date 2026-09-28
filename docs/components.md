@@ -15,6 +15,12 @@ This doc contains components and use cases
 
 - `KeyboardProvider` from `react-native-keyboard-controller` wraps the app in the root layout. Use its `KeyboardStickyView` / `KeyboardChatScrollView` for inputs that follow the keyboard; they animate on the UI thread. Reanimated's `useAnimatedKeyboard` is deprecated.
 
+## Accordion
+
+- A titled section that starts collapsed. An optional `summary` sits beside the chevron so the current value reads without expanding (e.g. Sort by · Top rated).
+- The content mounts on first expand and then stays mounted; the height animation runs on the UI thread and shortens under reduced motion. Collapsed content takes no touches and is hidden from screen readers.
+- Uncontrolled: to reset it to collapsed, remount it. Refer to `src/components/home-actions/filters-sheet/filters-sheet-body.tsx`.
+
 ## ScreenSafeArea
 
 - Every tab page wraps its content in it, so nothing draws under the status bar or notch. It pads the top only: the app is portrait, and the bottom belongs to the tab bar.

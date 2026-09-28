@@ -1,12 +1,16 @@
 import type { TripBundle } from '@/components/trip-card';
 
 // Shared by the feed tests: `count` distinct trips named "Trip 1", "Trip 2", ...
-export function makeTrips(count: number): TripBundle[] {
+// Their kinds cycle through `kinds`.
+export function makeTrips(
+  count: number,
+  kinds: TripBundle['kind'][] = ['experience'],
+): TripBundle[] {
   return Array.from({ length: count }, (_, index) => ({
     id: `trip-${index + 1}`,
     destination: `Trip ${index + 1}`,
     country: 'Tanzania',
-    kind: 'experience',
+    kind: kinds[index % kinds.length],
     price: { amount: 34300, currency: 'INR' },
     duration: { nights: 2, days: 3 },
     rating: 4.7,

@@ -28,15 +28,30 @@ export const FiltersSheet = forwardRef<BottomSheetRef>(function FiltersSheet(_pr
 
   useImperativeHandle(ref, () => ({ snapTo }), [snapTo]);
 
+  // The body sizes its scroll area to the part of the sheet on screen, so it needs to know
+  // whether the sheet is at full height. Changes once per snap, never per frame.
+  const [fullHeight, setFullHeight] = useState(false);
+
   const handleSnapChange = useCallback((snap: BottomSheetSnap) => {
     if (snap !== 'closed') setContentMounted(true);
+    setFullHeight(snap === 'full');
   }, []);
 
+  // A new key after each close remounts the body, dropping a choice that was not applied.
+  // It runs after the close animation, so the remount never costs a visible frame.
+  const [bodyKey, setBodyKey] = useState(0);
+  const handleClosed = useCallback(() => setBodyKey((key) => key + 1), []);
+
   return (
-    <BottomSheet ref={sheetRef} initialSnap="closed" onSnapChange={handleSnapChange}>
+    <BottomSheet
+      ref={sheetRef}
+      initialSnap="closed"
+      onSnapChange={handleSnapChange}
+      onClosed={handleClosed}
+    >
       {contentMounted ? (
         <Suspense fallback={<FiltersSheetFallback />}>
-          <FiltersSheetBody onSnapTo={snapTo} />
+          <FiltersSheetBody key={bodyKey} onSnapTo={snapTo} fullHeight={fullHeight} />
         </Suspense>
       ) : null}
     </BottomSheet>

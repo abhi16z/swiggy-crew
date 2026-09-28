@@ -64,7 +64,7 @@ export function HomeActions() {
           onPress={() => askCrewSheetRef.current?.snapTo('half')}
           className="min-h-11 items-center justify-center rounded-full bg-neutral-900 px-5 dark:bg-white"
         >
-          <Text className="text-base font-medium text-white dark:text-black">Ask Crew</Text>
+          <Text className="text-base font-medium text-white dark:text-black">Talk To Crew</Text>
         </Pressable>
       </View>
     </TabBarSafeArea>

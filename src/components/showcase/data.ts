@@ -1,6 +1,6 @@
-import type { RemoteImageAsset } from '@/components/ui/remote-image';
+import type { TripBundle } from '@/components/trip-card';
 
-export const SHOWCASE_BUNDLE = {
+export const SHOWCASE_BUNDLE: TripBundle = {
   id: 'serengeti-1',
   destination: 'Serengeti',
   country: 'Tanzania',
@@ -13,7 +13,7 @@ export const SHOWCASE_BUNDLE = {
     width: 1280,
     height: 720,
     placeholderColor: '#8a5436',
-  } satisfies RemoteImageAsset,
+  },
   highlights: [
     { id: 'serengeti-1-d1', day: 1, text: 'Arrive and get oriented around Serengeti', icon: 'map' },
     { id: 'serengeti-1-d2', day: 2, text: 'Walk the main sight with time to linger', icon: 'walk' },

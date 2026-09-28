@@ -3,6 +3,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { ShowcaseSheet, type BottomSheetRef, type BottomSheetSnap } from '@/components/showcase';
 import { ImageShowcase } from '@/components/showcase/image-showcase';
+import { TripCardShowcase } from '@/components/showcase/trip-card-showcase';
 
 export default function ShowcaseScreen() {
   const sheetRef = useRef<BottomSheetRef>(null);
@@ -36,6 +37,8 @@ export default function ShowcaseScreen() {
             </Text>
           </Pressable>
         </View>
+
+        <TripCardShowcase />
 
         <ImageShowcase />
       </ScrollView>

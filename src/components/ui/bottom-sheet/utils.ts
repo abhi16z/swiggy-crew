@@ -27,6 +27,16 @@ export function offsetFor(index: number, height: number, topInset: number) {
   return halfOffset(height, topInset);
 }
 
+/**
+ * Counter-translation that keeps a footer on the screen's bottom edge between full and half,
+ * then lets it ride down with the sheet from half to closed.
+ */
+export function footerOffset(translateY: number, half: number) {
+  'worklet';
+  // `0 -` rather than unary minus so a resting footer reports 0, not -0.
+  return 0 - Math.min(Math.max(translateY, 0), half);
+}
+
 export function resist(value: number, min: number, max: number, size: number) {
   'worklet';
   const band = size > 0 ? size : 1;

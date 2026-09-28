@@ -6,6 +6,8 @@ import {
   usePerformancePanelVisible,
 } from '@/components/performance-panel';
 
+import { OpenRouterSettings } from './open-router';
+
 export function Settings() {
   const insets = useSafeAreaInsets();
   const performancePanelVisible = usePerformancePanelVisible();
@@ -27,6 +29,7 @@ export function Settings() {
           onValueChange={setPerformancePanelVisible}
         />
       </View>
+      <OpenRouterSettings />
     </View>
   );
 }

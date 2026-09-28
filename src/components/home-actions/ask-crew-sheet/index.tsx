@@ -12,6 +12,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { Keyboard } from 'react-native';
 
 import { AskCrewSheetFallback } from './ask-crew-sheet-fallback';
 
@@ -21,15 +22,19 @@ const AskCrewSheetBody = lazy(() => import('./ask-crew-sheet-body'));
 export const AskCrewSheet = forwardRef<BottomSheetRef>(function AskCrewSheet(_props, ref) {
   const sheetRef = useRef<BottomSheetRef>(null);
   const [contentMounted, setContentMounted] = useState(false);
+  const [snap, setSnap] = useState<BottomSheetSnap>('closed');
 
-  const snapTo = useCallback((snap: BottomSheetSnap) => {
-    sheetRef.current?.snapTo(snap);
+  const snapTo = useCallback((target: BottomSheetSnap) => {
+    sheetRef.current?.snapTo(target);
   }, []);
 
   useImperativeHandle(ref, () => ({ snapTo }), [snapTo]);
 
-  const handleSnapChange = useCallback((snap: BottomSheetSnap) => {
-    if (snap !== 'closed') setContentMounted(true);
+  const handleSnapChange = useCallback((next: BottomSheetSnap) => {
+    setSnap(next);
+    if (next !== 'closed') setContentMounted(true);
+    // The input only follows the keyboard at full height.
+    if (next !== 'full') Keyboard.dismiss();
   }, []);
 
   const handleClosed = useCallback(() => {
@@ -45,7 +50,7 @@ export const AskCrewSheet = forwardRef<BottomSheetRef>(function AskCrewSheet(_pr
     >
       {contentMounted ? (
         <Suspense fallback={<AskCrewSheetFallback />}>
-          <AskCrewSheetBody onSnapTo={snapTo} />
+          <AskCrewSheetBody snap={snap} onSnapTo={snapTo} />
         </Suspense>
       ) : null}
     </BottomSheet>

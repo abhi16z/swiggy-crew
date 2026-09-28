@@ -34,6 +34,7 @@ import {
   PROJECT_SECONDS,
   REDUCE_MOTION_MS,
 } from './constants';
+import { BottomSheetContext, useBottomSheetContextValue } from './context';
 import type { BottomSheetProps, BottomSheetRef, BottomSheetSnap } from './types';
 import {
   closedOffset,
@@ -48,6 +49,8 @@ import {
   surfaceColor,
 } from './utils';
 
+export { useBottomSheetPeekInset } from './context';
+export { BottomSheetFooter } from './footer';
 export type { BottomSheetProps, BottomSheetRef, BottomSheetSnap } from './types';
 
 export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function BottomSheet(
@@ -59,6 +62,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function
   const reduceMotion = useReducedMotion();
   const [ready, setReady] = useState(false);
   const [interactive, setInteractive] = useState(initialSnap !== 'closed');
+  const [peekInset, setPeekInset] = useState(0);
 
   const translateY = useSharedValue(0);
   const dragOrigin = useSharedValue(0);
@@ -163,6 +167,8 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function
     ],
   );
 
+  const context = useBottomSheetContextValue(translateY, halfY, peekInset);
+
   const sheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.get() }],
   }));
@@ -174,7 +180,9 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function
       parentHeight.current = height;
       placedTopInset.current = topInset;
       topInsetSv.set(topInset);
-      halfY.set(halfOffset(height, topInset));
+      const half = halfOffset(height, topInset);
+      halfY.set(half);
+      setPeekInset(half);
       band.set(height);
       if (!isDragging.get()) {
         translateY.set(offsetFor(resting.get(), height, topInset));
@@ -290,7 +298,9 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function
                 />
               </View>
               <View className="flex-1" style={{ paddingBottom: insets.bottom }}>
-                {children}
+                <BottomSheetContext.Provider value={context}>
+                  {children}
+                </BottomSheetContext.Provider>
               </View>
             </View>
           </Animated.View>

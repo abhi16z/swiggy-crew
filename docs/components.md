@@ -9,6 +9,11 @@ This doc contains components and use cases
 - To unmount a heavy body on close, clear it from `onClosed` (fires after the close animation), not from `onSnapChange('closed')` (fires as it starts). Refer to `src/components/home-actions/ask-crew-sheet/index.tsx`.
 - Sheets that must cover the native tab bar are mounted in the root layout after `AppTabs` and opened through shared refs. Refer to `src/components/home-actions/sheets.tsx` and `sheet-refs.ts`.
 - The Android back button closes an open sheet; no per-sheet wiring is needed.
+- At half height the sheet is its full height slid down, so the bottom of the body is below the screen. To keep something (like a chat input) on the visible bottom edge at every height, render it in `BottomSheetFooter` as the body's last child; it counter-translates on the UI thread and paints the sheet surface. Content above the footer can end at the footer with `useBottomSheetPeekInset()` (a bottom margin while the sheet is not at full). Refer to `src/components/home-actions/ask-crew-sheet/ask-crew-sheet-body.tsx`.
+
+## Keyboard
+
+- `KeyboardProvider` from `react-native-keyboard-controller` wraps the app in the root layout. Use its `KeyboardStickyView` / `KeyboardChatScrollView` for inputs that follow the keyboard; they animate on the UI thread. Reanimated's `useAnimatedKeyboard` is deprecated.
 
 ## TabBarSafeArea
 

@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { createRef } from 'react';
 
 import { useTripsStore } from '@/components/discover-feed/store';
+import { makeTrips } from '@/components/discover-feed/test-data';
 import type { BottomSheetRef } from '@/components/ui/bottom-sheet';
 
 import { FiltersSheet } from '.';
@@ -84,6 +85,45 @@ describe('FiltersSheet', () => {
     expect(screen.getByRole('radio', { name: /^All trips/ })).toBeChecked();
     expect(screen.getByRole('radio', { name: /^Villa/ })).not.toBeChecked();
     expect(useTripsStore.getState().tripFilter).toBe('all');
+  });
+
+  // No frame drops: rebuilding the feed during the close animation would compete with it.
+  it('applies the chosen filters only once the close animation has finished', async () => {
+    const trips = makeTrips(4, ['villa', 'experience']);
+    useTripsStore.setState({ status: 'success', trips, visibleTrips: trips });
+    const ref = await renderFilters();
+    await act(async () => ref.current?.snapTo('half'));
+    await fireEvent.press(await screen.findByRole('radio', { name: /^Villa/ }));
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Show 2 trips' }));
+    expect(useTripsStore.getState()).toMatchObject({
+      tripFilter: 'all',
+      visibleTrips: trips,
+      pendingFilters: { tripFilter: 'villa' },
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+    expect(useTripsStore.getState()).toMatchObject({
+      tripFilter: 'villa',
+      visibleTrips: [trips[0], trips[2]],
+      pendingFilters: null,
+    });
+  });
+
+  it('drops queued filters if the sheet is pulled back up before it closes', async () => {
+    const ref = await renderFilters();
+    await act(async () => ref.current?.snapTo('half'));
+    await fireEvent.press(await screen.findByRole('radio', { name: /^Villa/ }));
+    await fireEvent.press(screen.getByRole('button', { name: /^Show/ }));
+
+    await act(async () => ref.current?.snapTo('half'));
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(useTripsStore.getState()).toMatchObject({ tripFilter: 'all', pendingFilters: null });
   });
 
   // At half the sheet's lower part is off screen, so the body caps itself unless it is full.

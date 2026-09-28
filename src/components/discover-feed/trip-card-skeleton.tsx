@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useColorScheme, View } from 'react-native';
 
-import { CARD_IMAGE_HEIGHT, CARD_IMAGE_RADIUS } from '@/components/ui/remote-image/constants';
+import { CARD_IMAGE_HEIGHT, CARD_IMAGE_RADIUS } from '@/components/trip-card/constants';
 
 const IMAGE_ICON_COLORS = { light: '#d4d4d4', dark: '#525252' } as const;
 

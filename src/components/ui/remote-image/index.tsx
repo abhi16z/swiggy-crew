@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { memo, useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { ERROR_ICON_SIZE, ERROR_IMAGE, FADE_IN_MS, LOADING_IMAGE } from './constants';
 import type { RemoteImageProps } from './types';
@@ -23,8 +24,11 @@ export const RemoteImage = memo(function RemoteImage({
   // Dev only: a bad loader is a coding mistake, not something to crash a release build over.
   if (__DEV__) assertRemoteLoaderUri(loaderUri);
 
+  const reduceMotion = useReducedMotion();
   const [failedUri, setFailedUri] = useState<string | null>(null);
   const failed = failedUri === uri;
+  // An unlabelled image is decorative: no empty stop for screen readers.
+  const labelled = Boolean(accessibilityLabel);
 
   const handleError = useCallback(() => setFailedUri(uri), [uri]);
 
@@ -32,7 +36,7 @@ export const RemoteImage = memo(function RemoteImage({
     return (
       <View
         testID={testID}
-        accessible
+        accessible={labelled}
         accessibilityRole="image"
         accessibilityLabel={accessibilityLabel}
         className="items-center justify-center bg-neutral-200 dark:bg-neutral-800"
@@ -57,9 +61,10 @@ export const RemoteImage = memo(function RemoteImage({
         contentFit="cover"
         placeholder={loaderUri ?? LOADING_IMAGE}
         placeholderContentFit="cover"
-        transition={FADE_IN_MS}
+        transition={reduceMotion ? 0 : FADE_IN_MS}
         cachePolicy="memory-disk"
-        accessible
+        accessible={labelled}
+        accessibilityRole="image"
         accessibilityLabel={accessibilityLabel}
         onError={handleError}
         style={[StyleSheet.absoluteFill, { borderRadius }]}

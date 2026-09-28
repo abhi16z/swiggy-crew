@@ -1,5 +1,13 @@
 import { CLOSED_GAP } from './constants';
-import { halfOffset, nearestOffset, neighborOffset, offsetFor, resist, snapIndex } from './utils';
+import {
+  footerOffset,
+  halfOffset,
+  nearestOffset,
+  neighborOffset,
+  offsetFor,
+  resist,
+  snapIndex,
+} from './utils';
 
 // A phone-sized parent: 800pt tall with a 40pt status bar.
 const HEIGHT = 800;
@@ -87,5 +95,24 @@ describe('resist (rubber band while dragging)', () => {
 
   it('returns a finite value before layout has measured the parent', () => {
     expect(Number.isFinite(resist(-50, 0, 40, 0))).toBe(true);
+  });
+});
+
+describe('footerOffset (footer pinned to the visible bottom)', () => {
+  it('does not move the footer at full height', () => {
+    expect(footerOffset(FULL, HALF)).toBe(0);
+  });
+
+  it('lifts the footer by the hidden part of the sheet between full and half', () => {
+    expect(footerOffset(200, HALF)).toBe(-200);
+    expect(footerOffset(HALF, HALF)).toBe(-HALF);
+  });
+
+  it('lets the footer ride down with the sheet below half', () => {
+    expect(footerOffset(CLOSED, HALF)).toBe(-HALF);
+  });
+
+  it('follows the sheet on overdrag above full', () => {
+    expect(footerOffset(-30, HALF)).toBe(0);
   });
 });

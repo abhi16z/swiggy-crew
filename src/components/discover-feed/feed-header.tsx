@@ -1,17 +1,23 @@
 import { memo } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
-import type { FeedStatus } from './store';
+import type { FeedStatus } from './types';
 import { formatTripCount } from './utils';
 
 type FeedHeaderProps = {
   status: FeedStatus;
   count: number;
+  /** New filters are waiting to be applied; the count shown is about to change. */
+  applyingFilters: boolean;
 };
 
 // Designs 01 and 02. Scrolls away with the cards; search and profile are not built yet.
-export const FeedHeader = memo(function FeedHeader({ status, count }: FeedHeaderProps) {
-  const loading = status === 'idle' || status === 'loading';
+export const FeedHeader = memo(function FeedHeader({
+  status,
+  count,
+  applyingFilters,
+}: FeedHeaderProps) {
+  const loading = status === 'idle' || status === 'loading' || applyingFilters;
 
   return (
     <View className="gap-6 pt-2 pb-4">
@@ -40,7 +46,7 @@ export const FeedHeader = memo(function FeedHeader({ status, count }: FeedHeader
             <Text className="text-sm text-neutral-500 dark:text-neutral-400">Loading</Text>
           </View>
         ) : null}
-        {status === 'success' ? (
+        {status === 'success' && !loading ? (
           <Text className="text-sm text-neutral-500 dark:text-neutral-400">
             {formatTripCount(count)}
           </Text>

@@ -27,6 +27,11 @@ export const FALLBACK_HIGHLIGHT_ICON: IoniconName = 'ellipse-outline';
 // ImageKit serves the same image at any size; 45x25 is ~0.5 KB and keeps the 16:9 shape.
 export const LOADER_TRANSFORM = 'tr=w-45,h-25';
 
+// Sizes from designs 01-03 (390pt wide screen): the card hero image is 208pt tall. Remote
+// images are 16:9, so they are cropped to cover.
+export const CARD_IMAGE_HEIGHT = 208;
+export const CARD_IMAGE_RADIUS = 16;
+
 // Sizes from design 03 (390pt wide screen).
 export const HIGHLIGHT_CARD_WIDTH = 204;
 export const HIGHLIGHT_GAP = 12;
@@ -39,9 +44,3 @@ export const ACTIVE_DOT_WIDTH = 16;
 export const DOT_MOVE_MS = 150;
 
 export const STAR_COLOR = '#a67c2e';
-
-// Icons take a color prop, not a class, so they follow the color scheme by hand.
-export const ICON_COLORS = {
-  light: { primary: '#171717', muted: '#737373' },
-  dark: { primary: '#fafafa', muted: '#a3a3a3' },
-} as const;

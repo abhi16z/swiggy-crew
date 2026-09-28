@@ -1,4 +1,4 @@
-import type { TripFilter } from '@/components/discover-feed/store';
+import type { TripFilter } from '@/components/discover-feed/types';
 import type { TripBundle } from '@/components/trip-card';
 
 /** Trips per filter card, in one pass over the trips. */

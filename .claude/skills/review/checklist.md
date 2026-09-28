@@ -19,6 +19,10 @@ Ask whether the change adds work on every frame, every render, or every tab visi
 
 - UI, hooks, utils, constants, and types stay under `src/`. Reusable pieces go in `src/components/ui`.
 - A file past 300 lines, or a second component in the same file, gets split. ESLint enforces `max-lines` (300) and `react/no-multi-comp`. The bottom sheet is the pattern: `index.tsx`, `utils.ts`, `types.ts`, `constants.ts`.
+- Hooks stay inside the component that uses them. Do not move a `useEffect`, `useState` or other hook logic into a custom hook just to extract it. Extract a custom hook only when it is reused, or will clearly be reused, by more than one component.
+  - When a component is too long, split it into smaller components first.
+  - A single-use custom hook is acceptable only as a last resort: the file still fails `max-lines` after splitting into components is not practical.
+  - Flag a new single-use custom hook that meets neither condition as `minor`, and suggest inlining it or splitting the component instead.
 - Lines stay at 100 characters. Fix a long line by restructuring it. An `eslint-disable` comment is a review failure.
 - Styling is NativeWind `className`, including dark mode (`dark:`). `StyleSheet` is only for what NativeWind cannot express, such as `borderCurve: 'continuous'`.
 - Dependencies are added with `npx expo install`, including dev dependencies (`npx expo install <pkg> -- -D`). `npm install` and `pnpm install <pkg>` are not how this repo adds packages.

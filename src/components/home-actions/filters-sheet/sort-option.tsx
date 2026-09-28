@@ -2,8 +2,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo } from 'react';
 import { Pressable, Text, useColorScheme } from 'react-native';
 
-import type { TripSort } from '@/components/discover-feed/store';
-import { ICON_COLORS } from '@/components/trip-card/constants';
+import type { TripSort } from '@/components/discover-feed/types';
+import { ICON_COLORS } from '@/constants/colors';
 
 type SortOptionProps = {
   value: TripSort;

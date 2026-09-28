@@ -6,6 +6,8 @@ import {
 } from '@/components/performance-panel';
 import { ScreenSafeArea } from '@/components/ui/screen-safe-area';
 
+import { OpenRouterSettings } from './open-router';
+
 export function Settings() {
   const performancePanelVisible = usePerformancePanelVisible();
 
@@ -28,6 +30,7 @@ export function Settings() {
               onValueChange={setPerformancePanelVisible}
             />
           </View>
+          <OpenRouterSettings />
         </View>
       </ScreenSafeArea>
     </View>

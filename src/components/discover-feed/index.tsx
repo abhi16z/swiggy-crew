@@ -20,14 +20,16 @@ export function DiscoverFeed() {
   const trips = useTripsStore((state) => state.visibleTrips);
   const loadTrips = useTripsStore((state) => state.loadTrips);
   const filtersKey = useTripsStore((state) => `${state.tripFilter}:${state.tripSort}`);
+  // Filters wait for the sheet's close animation; only the header changes meanwhile.
+  const applyingFilters = useTripsStore((state) => state.pendingFilters !== null);
 
   useEffect(() => {
     void loadTrips();
   }, [loadTrips]);
 
   const header = useMemo(
-    () => <FeedHeader status={status} count={trips.length} />,
-    [status, trips.length],
+    () => <FeedHeader status={status} count={trips.length} applyingFilters={applyingFilters} />,
+    [status, trips.length, applyingFilters],
   );
   const empty = useMemo(
     () => <FeedEmpty status={status} onRetry={loadTrips} />,

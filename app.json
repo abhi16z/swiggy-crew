@@ -9,6 +9,6 @@
     "web": {
       "output": "static"
     },
-    "plugins": ["expo-router", "expo-image"]
+    "plugins": ["expo-router", "expo-image", "expo-secure-store"]
   }
 }

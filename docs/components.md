@@ -9,6 +9,11 @@ This doc contains components and use cases
 - To unmount a heavy body on close, clear it from `onClosed` (fires after the close animation), not from `onSnapChange('closed')` (fires as it starts). Refer to `src/components/home-actions/ask-crew-sheet/index.tsx`.
 - Sheets that must cover the native tab bar are mounted in the root layout after `AppTabs` and opened through shared refs. Refer to `src/components/home-actions/sheets.tsx` and `sheet-refs.ts`.
 - The Android back button closes an open sheet; no per-sheet wiring is needed.
+- At half height the sheet is its full height slid down, so the bottom of the body is below the screen. To keep something (like a chat input) on the visible bottom edge at every height, render it in `BottomSheetFooter` as the body's last child; it counter-translates on the UI thread and paints the sheet surface. Content above the footer can end at the footer with `useBottomSheetPeekInset()` (a bottom margin while the sheet is not at full). Refer to `src/components/home-actions/ask-crew-sheet/ask-crew-sheet-body.tsx`.
+
+## Keyboard
+
+- `KeyboardProvider` from `react-native-keyboard-controller` wraps the app in the root layout. Use its `KeyboardStickyView` / `KeyboardChatScrollView` for inputs that follow the keyboard; they animate on the UI thread. Reanimated's `useAnimatedKeyboard` is deprecated.
 
 ## Accordion
 
@@ -39,7 +44,7 @@ This doc contains components and use cases
 ## RemoteImage
 
 - Use for every remote image. Built on `expo-image` (disk and memory cache, downscaled to the view size on Android).
-- `width` and `height` are required so the layout never waits on the image. Remote images are 16:9 and cropped to cover the box. Card hero sizes from the designs are in `src/components/ui/remote-image/constants.ts`.
+- `width` and `height` are required so the layout never waits on the image. Remote images are 16:9 and cropped to cover the box. Card hero sizes from the designs are in `src/components/trip-card/constants.ts`.
 - While loading: the item's `placeholderColor`, then `loaderUri` (a tiny remote copy in the same aspect ratio, e.g. ImageKit `?tr=w-45,h-25`) scaled up to fill the box. Without `loaderUri` it falls back to `src/assets/image-loading.png`. Both are drawn natively, so a successful load re-renders nothing.
 - `loaderUri` must be a remote http(s) URL: the `RemoteUri` type rejects other values, and in development a bundled image (`require(...)`, typed `any`) throws.
 - On failure: `src/assets/image-placeholder.png` centered on a neutral background, in the same box.

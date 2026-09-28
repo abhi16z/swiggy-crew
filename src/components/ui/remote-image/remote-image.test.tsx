@@ -1,7 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { RemoteImage } from '.';
-import { ERROR_IMAGE, LOADING_IMAGE } from './constants';
+import { ERROR_IMAGE, FADE_IN_MS, LOADING_IMAGE } from './constants';
+
+// Only the reduced-motion setting is replaced.
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual<object>('react-native-reanimated'),
+  useReducedMotion: jest.fn(() => false),
+}));
 
 const URI = 'https://ik.imagekit.io/a16xyz/crew/1.jpg?tr=w-1280,h-720';
 const OTHER_URI = 'https://ik.imagekit.io/a16xyz/crew/2.jpg?tr=w-1280,h-720';
@@ -63,6 +70,24 @@ describe('RemoteImage', () => {
     const fallback = screen.getByRole('image', { name: 'Serengeti' });
     expect(fallback).toHaveStyle({ width: '100%', height: 208 });
     expect(fallback.children[0]).toHaveProp('source', [ERROR_IMAGE]);
+  });
+
+  it('fades the image in, but not when the user prefers reduced motion', async () => {
+    await renderImage();
+    expect(screen.getByTestId('hero')).toHaveProp('transition', { duration: FADE_IN_MS });
+
+    jest.mocked(useReducedMotion).mockReturnValue(true);
+    await renderImage();
+    expect(screen.getByTestId('hero')).toHaveProp('transition', { duration: 0 });
+    jest.mocked(useReducedMotion).mockReturnValue(false);
+  });
+
+  it('is announced as an image when labelled, and skipped by screen readers when not', async () => {
+    await renderImage();
+    expect(screen.getByRole('image', { name: 'Serengeti' })).toBeOnTheScreen();
+
+    await render(<RemoteImage uri={URI} width={344} height={208} testID="decorative" />);
+    expect(screen.getByTestId('decorative')).toHaveProp('accessible', false);
   });
 
   // A recycled list cell receives a new uri; an earlier failure must not stick to it.

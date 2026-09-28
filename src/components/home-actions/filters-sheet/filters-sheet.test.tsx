@@ -8,6 +8,24 @@ import { FiltersSheet } from '.';
 
 jest.mock('expo-haptics');
 
+const mockBodyProps = jest.fn();
+
+// The real body, recording its props so the test can see what the sheet tells it.
+jest.mock('./filters-sheet-body', () => {
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+  const Body =
+    jest.requireActual<typeof import('./filters-sheet-body')>('./filters-sheet-body').default;
+  return {
+    __esModule: true,
+    default: function RecordingBody(props: Parameters<typeof Body>[0]) {
+      mockBodyProps(props);
+      return createElement(Body, props);
+    },
+  };
+});
+
+const lastFullHeight = () => mockBodyProps.mock.lastCall?.[0].fullHeight;
+
 async function renderFilters() {
   const ref = createRef<BottomSheetRef>();
   await render(<FiltersSheet ref={ref} />);
@@ -19,6 +37,7 @@ async function renderFilters() {
 
 beforeEach(() => {
   jest.useFakeTimers();
+  mockBodyProps.mockClear();
   useTripsStore.setState(useTripsStore.getInitialState());
 });
 
@@ -65,5 +84,19 @@ describe('FiltersSheet', () => {
     expect(screen.getByRole('radio', { name: /^All trips/ })).toBeChecked();
     expect(screen.getByRole('radio', { name: /^Villa/ })).not.toBeChecked();
     expect(useTripsStore.getState().tripFilter).toBe('all');
+  });
+
+  // At half the sheet's lower part is off screen, so the body caps itself unless it is full.
+  it('tells the body when the sheet is at full height, and when it is back at half', async () => {
+    const ref = await renderFilters();
+    await act(async () => ref.current?.snapTo('half'));
+    await screen.findByText('Trip type');
+    expect(lastFullHeight()).toBe(false);
+
+    await act(async () => ref.current?.snapTo('full'));
+    expect(lastFullHeight()).toBe(true);
+
+    await act(async () => ref.current?.snapTo('half'));
+    expect(lastFullHeight()).toBe(false);
   });
 });

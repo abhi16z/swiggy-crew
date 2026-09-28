@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { FlatList, type ListRenderItemInfo } from 'react-native';
 
 import { TripCard, type TripBundle } from '@/components/trip-card';
 import { ScreenSafeArea } from '@/components/ui/screen-safe-area';
 
-import { FEED_BATCH_SIZE } from './constants';
+import { FEED_BATCH_SIZE, FEED_WINDOW_SIZE } from './constants';
 import { FeedEmpty } from './feed-empty';
 import { FeedHeader } from './feed-header';
 import { useTripsStore } from './store';
@@ -19,24 +19,11 @@ export function DiscoverFeed() {
   const status = useTripsStore((state) => state.status);
   const trips = useTripsStore((state) => state.visibleTrips);
   const loadTrips = useTripsStore((state) => state.loadTrips);
-  const listRef = useRef<FlatList<TripBundle>>(null);
+  const filtersKey = useTripsStore((state) => `${state.tripFilter}:${state.tripSort}`);
 
   useEffect(() => {
     void loadTrips();
   }, [loadTrips]);
-
-  // Newly applied filters show their trips from the top. Subscribing (not selecting) keeps
-  // the filters themselves from re-rendering the feed; only the new trips do.
-  useEffect(
-    () =>
-      useTripsStore.subscribe((state, previous) => {
-        if (state.tripFilter === previous.tripFilter && state.tripSort === previous.tripSort) {
-          return;
-        }
-        listRef.current?.scrollToOffset({ offset: 0, animated: true });
-      }),
-    [],
-  );
 
   const header = useMemo(
     () => <FeedHeader status={status} count={trips.length} />,
@@ -51,13 +38,18 @@ export function DiscoverFeed() {
   return (
     <ScreenSafeArea>
       <FlatList
-        ref={listRef}
+        // New filters start a new list at the top. Given new data, a kept list would rebuild
+        // every card it had built in one blocking pass; a new one builds the first batch, then
+        // the rest in batches.
+        key={filtersKey}
+        testID="trip-feed"
         data={trips}
         renderItem={renderTrip}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
         initialNumToRender={FEED_BATCH_SIZE}
         maxToRenderPerBatch={FEED_BATCH_SIZE}
+        windowSize={FEED_WINDOW_SIZE}
         // Bottom space lets the last card scroll clear of the floating buttons. iOS needs more:
         // there the buttons sit above the tab bar inset, which the list doesn't fully clear.
         contentContainerClassName="px-4 pb-24 ios:pb-36"

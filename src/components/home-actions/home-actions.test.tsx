@@ -82,6 +82,13 @@ describe('HomeActions', () => {
     expect(within(bottomSafeArea).getByRole('button', { name: 'Open Ask Crew' })).toBeOnTheScreen();
   });
 
+  it('labels the buttons with what they open', async () => {
+    await render(<HomeActions />);
+
+    expect(screen.getByText('Filters')).toBeOnTheScreen();
+    expect(screen.getByText('Ask Crew')).toBeOnTheScreen();
+  });
+
   it('does not re-render the Home screen, and so the feed, when a sheet is opened', async () => {
     const user = userEvent.setup();
     await render(<HomeWithSheets />);

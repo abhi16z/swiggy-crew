@@ -1,8 +1,7 @@
 import { act, render, screen, userEvent, within } from '@testing-library/react-native';
-import { FlatList } from 'react-native';
 
 import { DiscoverFeed } from '.';
-import { FEED_BATCH_SIZE, SKELETON_COUNT } from './constants';
+import { FEED_BATCH_SIZE, FEED_WINDOW_SIZE, SKELETON_COUNT } from './constants';
 import { useTripsStore } from './store';
 import { jsonResponse, makeTrips } from './test-data';
 
@@ -97,37 +96,60 @@ describe('DiscoverFeed', () => {
     expect(await screen.findByText('No trips to show right now.')).toBeOnTheScreen();
   });
 
-  it('shows only the applied trip type and scrolls back to the top, animated', async () => {
-    const scrollToOffset = jest.spyOn(FlatList.prototype, 'scrollToOffset');
+  // Regression: applying filters froze the feed. Given new data, a kept list rebuilds every
+  // card it had built in one blocking pass; a new list builds only the first batch.
+  it('starts a new list with only the applied trip type when filters are applied', async () => {
     mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(4, ['villa', 'experience'])));
     await render(<DiscoverFeed />);
+    const loadingList = screen.getByTestId('trip-feed');
     await screen.findByText('4 trips');
-    expect(scrollToOffset).not.toHaveBeenCalled();
+    // Loading the trips keeps the list; only applied filters replace it.
+    expect(screen.getByTestId('trip-feed')).toBe(loadingList);
 
     await act(async () =>
       useTripsStore.getState().applyFilters({ tripFilter: 'villa', tripSort: 'recommended' }),
     );
 
+    expect(screen.getByTestId('trip-feed')).not.toBe(loadingList);
     expect(screen.getByText('Trip 1')).toBeOnTheScreen();
     expect(screen.getByText('Trip 3')).toBeOnTheScreen();
     expect(screen.queryByText('Trip 2')).not.toBeOnTheScreen();
     expect(screen.getByText('2 trips')).toBeOnTheScreen();
-    expect(scrollToOffset).toHaveBeenCalledWith({ offset: 0, animated: true });
-    scrollToOffset.mockRestore();
   });
 
-  it('scrolls back to the top when only the sort changes', async () => {
-    const scrollToOffset = jest.spyOn(FlatList.prototype, 'scrollToOffset');
+  it('starts a new list when only the sort changes', async () => {
     mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(2)));
     await render(<DiscoverFeed />);
     await screen.findByText('2 trips');
+    const list = screen.getByTestId('trip-feed');
 
     await act(async () =>
       useTripsStore.getState().applyFilters({ tripFilter: 'all', tripSort: 'top_rated' }),
     );
 
-    expect(scrollToOffset).toHaveBeenCalledWith({ offset: 0, animated: true });
-    scrollToOffset.mockRestore();
+    expect(screen.getByTestId('trip-feed')).not.toBe(list);
+  });
+
+  it('says so when the applied trip type has no trips', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(2, ['villa'])));
+    await render(<DiscoverFeed />);
+    await screen.findByText('2 trips');
+
+    await act(async () =>
+      useTripsStore.getState().applyFilters({ tripFilter: 'experience', tripSort: 'recommended' }),
+    );
+
+    expect(screen.getByText('0 trips')).toBeOnTheScreen();
+    expect(screen.getByText('No trips to show right now.')).toBeOnTheScreen();
+  });
+
+  // FlatList keeps 21 screens of cards built by default; low-end phones cannot spare that memory.
+  it('keeps only a small window of cards built around the visible screen', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(1)));
+    await render(<DiscoverFeed />);
+    await screen.findByText('Trip 1');
+
+    expect(screen.getByTestId('trip-feed')).toHaveProp('windowSize', FEED_WINDOW_SIZE);
   });
 
   // If the screen is ever remounted (e.g. a tab switch), the stored trips show without a refetch.

@@ -10,6 +10,12 @@ This doc contains components and use cases
 - Sheets that must cover the native tab bar are mounted in the root layout after `AppTabs` and opened through shared refs. Refer to `src/components/home-actions/sheets.tsx` and `sheet-refs.ts`.
 - The Android back button closes an open sheet; no per-sheet wiring is needed.
 
+## ScreenSafeArea
+
+- Every tab page wraps its content in it, so nothing draws under the status bar or notch. It pads the top only: the app is portrait, and the bottom belongs to the tab bar.
+- It has no background and takes no `className`: put it inside the page's background view and lay out an inner `View`. Refer to `src/components/settings/index.tsx`.
+- Keep a page's `BottomSheet` outside it; the sheet already places itself below the top inset.
+
 ## TabBarSafeArea
 
 - Wrap floating content in a tab screen (like the Home buttons) so it stays above the native tab bar. Pads by the tab bar inset on iOS; a plain overlay on Android, where screens already end above the tab bar.

@@ -1,9 +1,13 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+
+import { DiscoverFeed } from '@/components/discover-feed';
+import { HomeActions } from '@/components/home-actions';
 
 export default function HomeScreen() {
   return (
-    <View className="flex-1 items-center justify-center bg-white dark:bg-black">
-      <Text className="text-2xl text-red-500">Welcome To Crew</Text>
+    <View className="flex-1 bg-white dark:bg-black">
+      <DiscoverFeed />
+      <HomeActions />
     </View>
   );
 }

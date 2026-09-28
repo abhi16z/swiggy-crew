@@ -15,6 +15,10 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>About</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="info.circle" md="info" />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="gearshape" md="settings" />
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }

@@ -8,7 +8,13 @@ import {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, useColorScheme, View, type LayoutChangeEvent } from 'react-native';
+import {
+  BackHandler,
+  StyleSheet,
+  useColorScheme,
+  View,
+  type LayoutChangeEvent,
+} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   cancelAnimation,
@@ -45,7 +51,7 @@ import {
 export type { BottomSheetProps, BottomSheetRef, BottomSheetSnap } from './types';
 
 export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function BottomSheet(
-  { children, initialSnap = 'half', onSnapChange },
+  { children, initialSnap = 'half', onSnapChange, onClosed },
   ref,
 ) {
   const scheme = useColorScheme();
@@ -72,6 +78,8 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function
   const lastSnap = useRef<BottomSheetSnap>(initialSnap);
   const onSnapChangeRef = useRef(onSnapChange);
   onSnapChangeRef.current = onSnapChange;
+  const onClosedRef = useRef(onClosed);
+  onClosedRef.current = onClosed;
 
   const emitSnap = useCallback((snap: BottomSheetSnap) => {
     if (lastSnap.current === snap) return;
@@ -84,6 +92,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function
 
   const markClosed = useCallback(() => {
     setInteractive(false);
+    onClosedRef.current?.();
   }, []);
 
   const pan = useMemo(
@@ -229,6 +238,18 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function
   );
 
   useImperativeHandle(ref, () => ({ snapTo }), [snapTo]);
+
+  // Android back closes the sheet. Listens only while the sheet is up, and lets the press
+  // through once a close has started so back is never swallowed by a closing sheet.
+  useEffect(() => {
+    if (!interactive) return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (lastSnap.current === 'closed') return false;
+      snapTo('closed');
+      return true;
+    });
+    return () => subscription.remove();
+  }, [interactive, snapTo]);
 
   const onAccessibilityAction = useCallback(
     (event: { nativeEvent: { actionName: string } }) => {

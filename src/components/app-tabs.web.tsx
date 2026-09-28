@@ -22,6 +22,11 @@ export default function AppTabs() {
               <Text className="text-black dark:text-white">About</Text>
             </Pressable>
           </TabTrigger>
+          <TabTrigger name="settings" href="/settings" asChild>
+            <Pressable className="p-5">
+              <Text className="text-black dark:text-white">Settings</Text>
+            </Pressable>
+          </TabTrigger>
         </View>
       </TabList>
     </Tabs>

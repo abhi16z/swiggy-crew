@@ -10,4 +10,6 @@ export type BottomSheetProps = {
   children?: ReactNode;
   initialSnap?: BottomSheetSnap;
   onSnapChange?: (snap: BottomSheetSnap) => void;
+  /** Fires once the close animation finishes; `onSnapChange('closed')` fires as it starts. */
+  onClosed?: () => void;
 };

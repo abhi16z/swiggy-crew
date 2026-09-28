@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
 import { createRef } from 'react';
-import { Text } from 'react-native';
+import { BackHandler, Text } from 'react-native';
 import { State, type PanGesture } from 'react-native-gesture-handler';
 import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils';
 
@@ -113,6 +113,74 @@ describe('BottomSheet', () => {
     await finishAnimations();
     expect(getSheet()).not.toBeVisible();
     expect(getSheet()).toHaveProp('pointerEvents', 'none');
+  });
+
+  it('reports onClosed only after the close animation finishes', async () => {
+    const onClosed = jest.fn();
+    const { ref } = await renderSheet({ onClosed });
+
+    await act(async () => ref.current?.snapTo('closed'));
+    expect(onClosed).not.toHaveBeenCalled();
+
+    await finishAnimations();
+    expect(onClosed).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not report onClosed when reopened before the close animation finishes', async () => {
+    const onClosed = jest.fn();
+    const { ref } = await renderSheet({ onClosed });
+
+    await act(async () => ref.current?.snapTo('closed'));
+    await act(async () => ref.current?.snapTo('half'));
+    await finishAnimations();
+
+    expect(onClosed).not.toHaveBeenCalled();
+  });
+
+  describe('Android back button', () => {
+    const backHandlers = new Set<() => boolean | null | undefined>();
+
+    // Mirrors Android: newest listener first, stop at the first that handles the press.
+    async function pressBack() {
+      let handled = false;
+      await act(async () => {
+        handled = [...backHandlers].reverse().some((handler) => handler());
+      });
+      return handled;
+    }
+
+    beforeEach(() => {
+      backHandlers.clear();
+      jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_event, handler) => {
+        backHandlers.add(handler as () => boolean);
+        return { remove: () => backHandlers.delete(handler as () => boolean) };
+      });
+    });
+
+    afterEach(() => {
+      jest.mocked(BackHandler.addEventListener).mockRestore();
+    });
+
+    it('closes an open sheet and consumes the press', async () => {
+      const { ref, onSnapChange } = await renderSheet({ initialSnap: 'closed' });
+      await act(async () => ref.current?.snapTo('full'));
+
+      expect(await pressBack()).toBe(true);
+      expect(onSnapChange).toHaveBeenLastCalledWith('closed');
+      await finishAnimations();
+      expect(getSheet()).not.toBeVisible();
+    });
+
+    it('lets back through while the sheet is closing or closed', async () => {
+      const { ref } = await renderSheet();
+
+      await act(async () => ref.current?.snapTo('closed'));
+      expect(await pressBack()).toBe(false);
+
+      await finishAnimations();
+      expect(backHandlers.size).toBe(0);
+      expect(await pressBack()).toBe(false);
+    });
   });
 
   it('reopens after being closed', async () => {

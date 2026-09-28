@@ -11,8 +11,7 @@ import {
 } from './api-key-store';
 
 afterEach(async () => {
-  await SecureStore.deleteItemAsync(API_KEY_STORAGE_KEY);
-  resetApiKeyStore();
+  await resetApiKeyStore();
 });
 
 describe('api key store', () => {

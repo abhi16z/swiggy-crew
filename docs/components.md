@@ -15,6 +15,21 @@ This doc contains components and use cases
 
 - `KeyboardProvider` from `react-native-keyboard-controller` wraps the app in the root layout. Use its `KeyboardStickyView` / `KeyboardChatScrollView` for inputs that follow the keyboard; they animate on the UI thread. Reanimated's `useAnimatedKeyboard` is deprecated.
 
+## ScreenSafeArea
+
+- Every tab page wraps its content in it, so nothing draws under the status bar or notch. It pads the top only: the app is portrait, and the bottom belongs to the tab bar.
+- It has no background and takes no `className`: put it inside the page's background view and lay out an inner `View`. Refer to `src/components/settings/index.tsx`.
+- Keep a page's `BottomSheet` outside it; the sheet already places itself below the top inset.
+
 ## TabBarSafeArea
 
 - Wrap floating content in a tab screen (like the Home buttons) so it stays above the native tab bar. Pads by the tab bar inset on iOS; a plain overlay on Android, where screens already end above the tab bar.
+
+## RemoteImage
+
+- Use for every remote image. Built on `expo-image` (disk and memory cache, downscaled to the view size on Android).
+- `width` and `height` are required so the layout never waits on the image. Remote images are 16:9 and cropped to cover the box. Card hero sizes from the designs are in `src/components/ui/remote-image/constants.ts`.
+- While loading: the item's `placeholderColor`, then `loaderUri` (a tiny remote copy in the same aspect ratio, e.g. ImageKit `?tr=w-45,h-25`) scaled up to fill the box. Without `loaderUri` it falls back to `src/assets/image-loading.png`. Both are drawn natively, so a successful load re-renders nothing.
+- `loaderUri` must be a remote http(s) URL: the `RemoteUri` type rejects other values, and in development a bundled image (`require(...)`, typed `any`) throws.
+- On failure: `src/assets/image-placeholder.png` centered on a neutral background, in the same box.
+- Safe in recycled list cells: a new `uri` resets the failure state and the previous image. Refer to `src/components/showcase/image-showcase.tsx`.

@@ -42,7 +42,7 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
-  resetApiKeyStore();
+  await resetApiKeyStore();
   setModelId(DEFAULT_MODEL_ID);
 });
 

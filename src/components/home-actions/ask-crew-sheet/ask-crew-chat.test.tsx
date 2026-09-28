@@ -69,9 +69,9 @@ beforeEach(async () => {
   await saveApiKey('sk-or-v1-test');
 });
 
-afterEach(() => {
+afterEach(async () => {
   clearChat();
-  resetApiKeyStore();
+  await resetApiKeyStore();
   jest.useRealTimers();
 });
 

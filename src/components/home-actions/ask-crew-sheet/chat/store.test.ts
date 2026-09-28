@@ -3,14 +3,7 @@ import { resetApiKeyStore } from '@/lib/ai-settings/api-key-store';
 import { OpenRouterError, streamChat } from '@/lib/open-router';
 
 import { FLUSH_INTERVAL_MS } from './delta-buffer';
-import {
-  clearChat,
-  retryReply,
-  sendMessage,
-  stopReply,
-  toHistory,
-  useChatStore,
-} from './store';
+import { clearChat, retryReply, sendMessage, stopReply, toHistory, useChatStore } from './store';
 import type { ChatMessage } from './types';
 
 jest.mock('@/lib/open-router', () => ({
@@ -56,9 +49,9 @@ beforeEach(async () => {
   await saveApiKey('sk-or-v1-test');
 });
 
-afterEach(() => {
+afterEach(async () => {
   clearChat();
-  resetApiKeyStore();
+  await resetApiKeyStore();
   jest.useRealTimers();
 });
 

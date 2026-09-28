@@ -52,8 +52,9 @@ export function useApiKeyLoaded() {
   return useApiKeyStore((state) => state.loaded);
 }
 
-/** Test helper: forget the in-memory key and the cached read. */
-export function resetApiKeyStore() {
+/** Test helper: forget the stored key, the in-memory key, and the cached read. */
+export async function resetApiKeyStore() {
+  if (persistent) await SecureStore.deleteItemAsync(API_KEY_STORAGE_KEY).catch(() => null);
   loading = null;
   useApiKeyStore.setState({ loaded: !persistent, apiKey: null });
 }

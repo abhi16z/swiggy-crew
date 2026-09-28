@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { FlatList, type ListRenderItemInfo } from 'react-native';
 
 import { TripCard, type TripBundle } from '@/components/trip-card';
@@ -17,12 +17,26 @@ function renderTrip({ item }: ListRenderItemInfo<TripBundle>) {
 // scroll position survive; the trips live in a store, so a remount would not refetch either.
 export function DiscoverFeed() {
   const status = useTripsStore((state) => state.status);
-  const trips = useTripsStore((state) => state.trips);
+  const trips = useTripsStore((state) => state.visibleTrips);
   const loadTrips = useTripsStore((state) => state.loadTrips);
+  const listRef = useRef<FlatList<TripBundle>>(null);
 
   useEffect(() => {
     void loadTrips();
   }, [loadTrips]);
+
+  // Newly applied filters show their trips from the top. Subscribing (not selecting) keeps
+  // the filters themselves from re-rendering the feed; only the new trips do.
+  useEffect(
+    () =>
+      useTripsStore.subscribe((state, previous) => {
+        if (state.tripFilter === previous.tripFilter && state.tripSort === previous.tripSort) {
+          return;
+        }
+        listRef.current?.scrollToOffset({ offset: 0, animated: true });
+      }),
+    [],
+  );
 
   const header = useMemo(
     () => <FeedHeader status={status} count={trips.length} />,
@@ -37,6 +51,7 @@ export function DiscoverFeed() {
   return (
     <ScreenSafeArea>
       <FlatList
+        ref={listRef}
         data={trips}
         renderItem={renderTrip}
         ListHeaderComponent={header}

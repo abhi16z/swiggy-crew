@@ -1,4 +1,6 @@
-import { render, screen, userEvent, within } from '@testing-library/react-native';
+import { act, render, screen, userEvent, within } from '@testing-library/react-native';
+
+import { useTripsStore, type AppliedFilters } from '@/components/discover-feed/store';
 
 import { HomeActions, HomeSheets } from '.';
 
@@ -54,6 +56,7 @@ function HomeWithSheets({ homeMounted = true }: { homeMounted?: boolean }) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  useTripsStore.setState(useTripsStore.getInitialState());
 });
 
 describe('HomeActions', () => {
@@ -87,6 +90,30 @@ describe('HomeActions', () => {
     await user.press(screen.getByRole('button', { name: 'Open Ask Crew' }));
 
     expect(homeRenders).toHaveBeenCalledTimes(1);
+  });
+
+  // A trip type other than All counts 1, a sort other than Recommended counts 1.
+  it('badges the Filters button with how many filters are applied', async () => {
+    const apply = (filters: AppliedFilters) =>
+      act(async () => useTripsStore.getState().applyFilters(filters));
+    const badge = () => within(screen.getByTestId('filters-badge'));
+    const filtersButton = () => screen.getByRole('button', { name: 'Open filters' });
+    await render(<HomeActions />);
+    expect(screen.queryByTestId('filters-badge')).not.toBeOnTheScreen();
+
+    await apply({ tripFilter: 'villa', tripSort: 'recommended' });
+    expect(badge().getByText('1')).toBeOnTheScreen();
+    expect(filtersButton()).toHaveAccessibilityValue({ text: '1 filter applied' });
+
+    await apply({ tripFilter: 'villa', tripSort: 'top_rated' });
+    expect(badge().getByText('2')).toBeOnTheScreen();
+    expect(filtersButton()).toHaveAccessibilityValue({ text: '2 filters applied' });
+
+    await apply({ tripFilter: 'all', tripSort: 'price_low' });
+    expect(badge().getByText('1')).toBeOnTheScreen();
+
+    await apply({ tripFilter: 'all', tripSort: 'recommended' });
+    expect(screen.queryByTestId('filters-badge')).not.toBeOnTheScreen();
   });
 
   it('closes both sheets when Home loses focus so they never cover another tab', async () => {

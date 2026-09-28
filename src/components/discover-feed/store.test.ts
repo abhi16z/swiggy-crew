@@ -1,5 +1,5 @@
 import { FETCH_TIMEOUT_MS, TRIPS_URL } from './constants';
-import { useTripsStore } from './store';
+import { useTripsStore, type AppliedFilters } from './store';
 import { jsonResponse, makeTrips } from './test-data';
 
 const realFetch = globalThis.fetch;
@@ -7,7 +7,7 @@ const mockFetch = jest.fn<Promise<Response>, [string, RequestInit?]>();
 
 beforeEach(() => {
   globalThis.fetch = mockFetch as typeof fetch;
-  useTripsStore.setState({ status: 'idle', trips: [] });
+  useTripsStore.setState(useTripsStore.getInitialState());
 });
 
 afterEach(() => {
@@ -17,6 +17,7 @@ afterEach(() => {
 });
 
 const loadTrips = () => useTripsStore.getState().loadTrips();
+const applyFilters = (filters: AppliedFilters) => useTripsStore.getState().applyFilters(filters);
 
 describe('trips store', () => {
   it('fetches the trips and stores them', async () => {
@@ -71,6 +72,68 @@ describe('trips store', () => {
     await loadTrips();
 
     expect(useTripsStore.getState()).toMatchObject({ status: 'success', trips });
+  });
+
+  it('shows every trip until a trip type is applied', async () => {
+    const trips = makeTrips(2, ['villa', 'experience']);
+    mockFetch.mockResolvedValueOnce(jsonResponse(trips));
+
+    await loadTrips();
+
+    expect(useTripsStore.getState()).toMatchObject({
+      tripFilter: 'all',
+      tripSort: 'recommended',
+      visibleTrips: trips,
+    });
+  });
+
+  it('keeps only the trips of the applied type, and all of them again for "all"', async () => {
+    const trips = makeTrips(4, ['villa', 'experience']);
+    mockFetch.mockResolvedValueOnce(jsonResponse(trips));
+    await loadTrips();
+
+    applyFilters({ tripFilter: 'villa', tripSort: 'recommended' });
+    expect(useTripsStore.getState().visibleTrips).toEqual([trips[0], trips[2]]);
+
+    applyFilters({ tripFilter: 'all', tripSort: 'recommended' });
+    expect(useTripsStore.getState().visibleTrips).toEqual(trips);
+  });
+
+  // Recommended is the data order, so undoing a sort must bring that order back.
+  it('sorts the visible trips, and restores data order for recommended', async () => {
+    const trips = makeTrips(3).map((trip, index) => ({ ...trip, rating: [4.1, 4.9, 4.5][index] }));
+    mockFetch.mockResolvedValueOnce(jsonResponse(trips));
+    await loadTrips();
+
+    applyFilters({ tripFilter: 'all', tripSort: 'top_rated' });
+    expect(useTripsStore.getState().visibleTrips).toEqual([trips[1], trips[2], trips[0]]);
+
+    applyFilters({ tripFilter: 'all', tripSort: 'recommended' });
+    expect(useTripsStore.getState().visibleTrips).toEqual(trips);
+  });
+
+  // Filters are applied without a refetch, and a load that finishes later still respects them.
+  it('applies the chosen type and sort to trips that finish loading after them', async () => {
+    const trips = makeTrips(3, ['flight_stay', 'villa']).map((trip, index) => ({
+      ...trip,
+      price: { ...trip.price, amount: [30000, 10000, 20000][index] },
+    }));
+    mockFetch.mockResolvedValueOnce(jsonResponse(trips));
+
+    applyFilters({ tripFilter: 'flight_stay', tripSort: 'price_low' });
+    await loadTrips();
+
+    expect(useTripsStore.getState().visibleTrips).toEqual([trips[2], trips[0]]);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows no trips for a type the feed does not have', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(2, ['villa'])));
+    await loadTrips();
+
+    applyFilters({ tripFilter: 'experience', tripSort: 'recommended' });
+
+    expect(useTripsStore.getState().visibleTrips).toEqual([]);
   });
 
   // A request that never answers on a weak network must not leave the feed loading forever.

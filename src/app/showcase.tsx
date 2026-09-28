@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { ShowcaseSheet, type BottomSheetRef, type BottomSheetSnap } from '@/components/showcase';
+import { AccordionShowcase } from '@/components/showcase/accordion-showcase';
 import { ImageShowcase } from '@/components/showcase/image-showcase';
 import { TripCardShowcase } from '@/components/showcase/trip-card-showcase';
 import { ScreenSafeArea } from '@/components/ui/screen-safe-area';
@@ -39,6 +40,8 @@ export default function ShowcaseScreen() {
               </Text>
             </Pressable>
           </View>
+
+          <AccordionShowcase />
 
           <TripCardShowcase />
 

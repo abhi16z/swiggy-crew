@@ -64,7 +64,12 @@ export function HomeActions() {
           onPress={() => askCrewSheetRef.current?.snapTo('half')}
           className="min-h-11 items-center justify-center rounded-full bg-neutral-900 px-5 dark:bg-white"
         >
-          <Text className="text-base font-medium text-white dark:text-black">Ask Crew</Text>
+          {/* One line: on some Android ROMs (Realme/ColorOS) the line breaker wraps "Crew"
+              even though the label fits the width it was measured at, and the
+              one-line-tall button clips it. */}
+          <Text numberOfLines={1} className="text-base font-medium text-white dark:text-black">
+            Ask Crew
+          </Text>
         </Pressable>
       </View>
     </TabBarSafeArea>

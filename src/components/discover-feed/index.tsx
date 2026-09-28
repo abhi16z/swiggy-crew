@@ -1,13 +1,17 @@
+import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { useEffect, useMemo } from 'react';
-import { FlatList, type ListRenderItemInfo } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 import { TripCard, type TripBundle } from '@/components/trip-card';
 import { ScreenSafeArea } from '@/components/ui/screen-safe-area';
 
-import { FEED_BATCH_SIZE, FEED_WINDOW_SIZE } from './constants';
 import { FeedEmpty } from './feed-empty';
 import { FeedHeader } from './feed-header';
 import { useTripsStore } from './store';
+
+function keyOf(trip: TripBundle) {
+  return trip.id;
+}
 
 function renderTrip({ item }: ListRenderItemInfo<TripBundle>) {
   return <TripCard trip={item} />;
@@ -15,6 +19,8 @@ function renderTrip({ item }: ListRenderItemInfo<TripBundle>) {
 
 // Designs 01-03. Native tabs keep this screen mounted on a tab switch, so the list and its
 // scroll position survive; the trips live in a store, so a remount would not refetch either.
+// FlashList recycles card views as they scroll off, so only about a screen of cards is ever
+// built. TripCard and RemoteImage key their local state by trip id / image uri for this.
 export function DiscoverFeed() {
   const status = useTripsStore((state) => state.status);
   const trips = useTripsStore((state) => state.visibleTrips);
@@ -36,26 +42,27 @@ export function DiscoverFeed() {
     [status, loadTrips],
   );
 
-  // No keyExtractor: FlatList keys items by their `id` by default.
   return (
     <ScreenSafeArea>
-      <FlatList
-        // New filters start a new list at the top. Given new data, a kept list would rebuild
-        // every card it had built in one blocking pass; a new one builds the first batch, then
-        // the rest in batches.
+      <FlashList
+        // New filters start a new list at the top, instead of the old scroll offset landing
+        // somewhere in a different set of trips.
         key={filtersKey}
         testID="trip-feed"
         data={trips}
+        keyExtractor={keyOf}
         renderItem={renderTrip}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
-        initialNumToRender={FEED_BATCH_SIZE}
-        maxToRenderPerBatch={FEED_BATCH_SIZE}
-        windowSize={FEED_WINDOW_SIZE}
-        // Bottom space lets the last card scroll clear of the floating buttons. iOS needs more:
-        // there the buttons sit above the tab bar inset, which the list doesn't fully clear.
-        contentContainerClassName="px-4 pb-24 ios:pb-36"
+        contentContainerStyle={styles.content}
       />
     </ScreenSafeArea>
   );
 }
+
+// FlashList is not a core component, so NativeWind classes don't reach it.
+const styles = StyleSheet.create({
+  // Bottom space lets the last card scroll clear of the floating buttons. iOS needs more:
+  // there the buttons sit above the tab bar inset, which the list doesn't fully clear.
+  content: { paddingHorizontal: 16, paddingBottom: Platform.OS === 'ios' ? 144 : 96 },
+});

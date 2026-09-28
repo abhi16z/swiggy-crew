@@ -1,10 +1,10 @@
 import { TabList, TabSlot, TabTrigger, Tabs } from 'expo-router/ui';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function AppTabs() {
   return (
     <Tabs>
-      <TabSlot />
+      <TabSlot style={styles.slot} />
       <TabList asChild>
         <View className="absolute bottom-0 w-full flex-row justify-center bg-neutral-100 dark:bg-neutral-900">
           <TabTrigger name="home" href="/" asChild>
@@ -32,3 +32,10 @@ export default function AppTabs() {
     </Tabs>
   );
 }
+
+// TabSlot's container won't shrink by default, so a tall page stretched it and the whole
+// document scrolled instead of the page's own list. A bounded slot gives the feed a viewport
+// to virtualize against. TabSlot is not a core component, so NativeWind classes don't reach it.
+const styles = StyleSheet.create({
+  slot: { flexShrink: 1 },
+});

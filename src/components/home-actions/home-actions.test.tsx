@@ -90,6 +90,14 @@ describe('HomeActions', () => {
     expect(screen.getByText('Ask Crew')).toBeOnTheScreen();
   });
 
+  // Regression: on a Realme (ColorOS) phone "Crew" wrapped to a second line that the
+  // one-line-tall button clipped, leaving only "Ask" visible.
+  it('keeps the Ask Crew label on one line', async () => {
+    await render(<HomeActions />);
+
+    expect(screen.getByText('Ask Crew')).toHaveProp('numberOfLines', 1);
+  });
+
   it('does not re-render the Home screen, and so the feed, when a sheet is opened', async () => {
     const user = userEvent.setup();
     await render(<HomeWithSheets />);

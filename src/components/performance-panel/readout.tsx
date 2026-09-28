@@ -24,9 +24,14 @@ type ReadoutProps = {
 // it keeps updating while the JS thread is blocked, which is exactly when it matters.
 // NativeWind does not style animated components, so this one uses StyleSheet.
 export function Readout({ value, initial, style, testID }: ReadoutProps) {
-  const animatedProps = useAnimatedProps<TextInputProps & { text?: string }>(() => ({
-    text: value.get(),
-  }));
+  // `text` drives the native view. TextInput ignores a `text` prop from React and renders
+  // `defaultValue` instead, so `defaultValue` must track the value too: Reanimated hands a
+  // value that stopped changing back to React, and passes the current value as a prop on mount.
+  // Without it the readout falls back to `initial` (e.g. FPS shows "–" while idle).
+  const animatedProps = useAnimatedProps<TextInputProps & { text?: string }>(() => {
+    const text = value.get();
+    return { text, defaultValue: text };
+  });
 
   return (
     <AnimatedTextInput

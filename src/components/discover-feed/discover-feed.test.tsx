@@ -1,7 +1,7 @@
 import { act, render, screen, userEvent, within } from '@testing-library/react-native';
 
 import { DiscoverFeed } from '.';
-import { FEED_BATCH_SIZE, FEED_WINDOW_SIZE, SKELETON_COUNT } from './constants';
+import { SKELETON_COUNT } from './constants';
 import { useTripsStore } from './store';
 import { jsonResponse, makeTrips } from './test-data';
 
@@ -65,13 +65,13 @@ describe('DiscoverFeed', () => {
   });
 
   // Cards are heavy; mounting all of a long feed at once would stall a low-end phone.
-  it('renders only the first batch of a long feed up front', async () => {
+  it('builds only the cards near the screen in a long feed', async () => {
     mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(120)));
 
     await render(<DiscoverFeed />);
 
     expect(await screen.findByText('120 trips')).toBeOnTheScreen();
-    expect(screen.getByText(`Trip ${FEED_BATCH_SIZE}`)).toBeOnTheScreen();
+    expect(screen.getByText('Trip 1')).toBeOnTheScreen();
     expect(screen.queryByText('Trip 120')).not.toBeOnTheScreen();
   });
 
@@ -96,8 +96,7 @@ describe('DiscoverFeed', () => {
     expect(await screen.findByText('No trips to show right now.')).toBeOnTheScreen();
   });
 
-  // Regression: applying filters froze the feed. Given new data, a kept list rebuilds every
-  // card it had built in one blocking pass; a new list builds only the first batch.
+  // New filters start a new list, so it opens at the top of the new set of trips.
   it('starts a new list with only the applied trip type when filters are applied', async () => {
     mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(4, ['villa', 'experience'])));
     await render(<DiscoverFeed />);
@@ -141,15 +140,6 @@ describe('DiscoverFeed', () => {
 
     expect(screen.getByText('0 trips')).toBeOnTheScreen();
     expect(screen.getByText('No trips to show right now.')).toBeOnTheScreen();
-  });
-
-  // FlatList keeps 21 screens of cards built by default; low-end phones cannot spare that memory.
-  it('keeps only a small window of cards built around the visible screen', async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(1)));
-    await render(<DiscoverFeed />);
-    await screen.findByText('Trip 1');
-
-    expect(screen.getByTestId('trip-feed')).toHaveProp('windowSize', FEED_WINDOW_SIZE);
   });
 
   // If the screen is ever remounted (e.g. a tab switch), the stored trips show without a refetch.

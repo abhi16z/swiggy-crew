@@ -171,6 +171,23 @@ describe('PerformancePanelBody', () => {
     expect(screen.getByTestId('hud-drops')).toHaveAnimatedProps({ text: '1' });
   });
 
+  // Regression: TextInput renders `defaultValue`, not `text`, whenever React renders it, so a
+  // readout whose `defaultValue` stayed at its placeholder fell back to "–" / "0" on device.
+  it('keeps the live value in defaultValue, including when remounted on collapse', async () => {
+    await renderPanel();
+    await frames([...steady(100), 48.3, ...steady(80)]);
+
+    expect(screen.getByTestId('hud-fps')).toHaveAnimatedProps({ text: '60', defaultValue: '60' });
+    expect(screen.getByTestId('hud-drops')).toHaveAnimatedProps({ text: '1', defaultValue: '1' });
+
+    await expand();
+    await collapse();
+
+    // No frame has run since the remount: the first render already carries the live values.
+    expect(screen.getByTestId('hud-fps').props.defaultValue).toBe('60');
+    expect(screen.getByTestId('hud-drops').props.defaultValue).toBe('1');
+  });
+
   it('resets the session from the expanded panel', async () => {
     await renderPanel();
     await frames([...steady(30), 48.3]);

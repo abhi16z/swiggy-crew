@@ -27,7 +27,7 @@ export const TripCard = memo(function TripCard({ trip }: TripCardProps) {
   );
 
   return (
-    <View className="rounded-[22px] border border-neutral-200 bg-white p-1.5 dark:border-neutral-800 dark:bg-neutral-900">
+    <View className="mb-4 rounded-[22px] border border-neutral-200 bg-white p-1.5 dark:border-neutral-800 dark:bg-neutral-900">
       <View>
         <RemoteImage
           uri={image.url}

@@ -30,6 +30,7 @@ ESLint (`eslint-config-expo` + Prettier) and Prettier (with `prettier-plugin-org
 - folder src/components/ui is for reusable components.
 - If a component grows more than 300 lines, create a folder for the component and break the component in smaller components, or move out util files in `<folder>/utils`, types in `<folder>/utils` types in `<folder>/types`
 - Please use tailwind css. Use React native StyleSheet only places where NativeWind does not provide support.
+- All pages and modals must be wrapped under SafeAreaView, directly or indirectly.
 
 ## Testing rules
 

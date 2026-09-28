@@ -8,6 +8,7 @@ import { HudHeader } from './hud-header';
 import { SessionSummary } from './session-summary';
 import { useSnapshot } from './snapshot-store';
 import { StatTiles } from './stat-tiles';
+import { setPerformancePanelVisible } from './store';
 import type { PerfTracker } from './use-perf-tracker';
 
 type ExpandedHudProps = {
@@ -16,6 +17,11 @@ type ExpandedHudProps = {
 };
 
 const NO_FRAMES: number[] = [];
+
+// Same as switching the panel off in Settings, so it stays off after a restart.
+function closePanel() {
+  setPerformancePanelVisible(false);
+}
 
 // Design 08. Re-renders 4 times a second from the snapshot the UI thread publishes; nothing
 // outside this card subscribes to it.
@@ -44,7 +50,11 @@ export function ExpandedHud({ tracker, onCollapse }: ExpandedHudProps) {
         showsVerticalScrollIndicator={false}
         contentContainerClassName="p-3"
       >
-        <HudHeader elapsedMs={snapshot?.elapsedMs ?? 0} onCollapse={onCollapse} />
+        <HudHeader
+          elapsedMs={snapshot?.elapsedMs ?? 0}
+          onCollapse={onCollapse}
+          onClose={closePanel}
+        />
         <StatTiles snapshot={snapshot} />
         <FrameChart recent={snapshot?.recent ?? NO_FRAMES} />
         <SessionSummary snapshot={snapshot} />

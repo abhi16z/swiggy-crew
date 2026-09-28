@@ -7,9 +7,13 @@ import { formatClock } from './utils';
 type HudHeaderProps = {
   elapsedMs: number;
   onCollapse: () => void;
+  onClose: () => void;
 };
 
-export function HudHeader({ elapsedMs, onCollapse }: HudHeaderProps) {
+const ICON_BUTTON_CLASS =
+  'h-8 w-8 items-center justify-center rounded-full bg-neutral-700 active:opacity-70';
+
+export function HudHeader({ elapsedMs, onCollapse, onClose }: HudHeaderProps) {
   return (
     <View className="flex-row items-center justify-between">
       <View>
@@ -23,15 +27,27 @@ export function HudHeader({ elapsedMs, onCollapse }: HudHeaderProps) {
           </Text>
         </View>
       </View>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Collapse performance panel"
-        hitSlop={8}
-        onPress={onCollapse}
-        className="h-8 w-8 items-center justify-center rounded-full bg-neutral-700 active:opacity-70"
-      >
-        <Ionicons name="chevron-up" size={16} color={HUD_COLORS.value} />
-      </Pressable>
+      {/* Gap of twice the hitSlop, so the two buttons' touch areas don't overlap. */}
+      <View className="flex-row gap-4">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Collapse performance panel"
+          hitSlop={8}
+          onPress={onCollapse}
+          className={ICON_BUTTON_CLASS}
+        >
+          <Ionicons name="chevron-up" size={16} color={HUD_COLORS.value} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Close performance panel"
+          hitSlop={8}
+          onPress={onClose}
+          className={ICON_BUTTON_CLASS}
+        >
+          <Ionicons name="close" size={16} color={HUD_COLORS.value} />
+        </Pressable>
+      </View>
     </View>
   );
 }

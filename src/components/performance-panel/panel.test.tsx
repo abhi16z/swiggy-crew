@@ -2,8 +2,10 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import * as Clipboard from 'expo-clipboard';
 import type { FrameInfo } from 'react-native-reanimated';
 
+import { PerformancePanel } from '.';
 import { COPIED_FEEDBACK_MS, HUD_COLORS } from './constants';
 import PerformancePanelBody from './panel';
+import { setPerformancePanelVisible, usePerformancePanelStore } from './store';
 
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
 
@@ -77,6 +79,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  setPerformancePanelVisible(false);
   jest.useRealTimers();
 });
 
@@ -210,6 +213,21 @@ describe('PerformancePanelBody', () => {
     await collapse();
     await frames(steady(20));
     expect(screen.getByTestId('hud-drops')).toHaveAnimatedProps({ text: '0' });
+  });
+
+  it('closes the whole panel from the expanded header, like the Settings switch', async () => {
+    setPerformancePanelVisible(true);
+    await render(<PerformancePanel />);
+    await fireEvent.press(await screen.findByRole('button', { name: 'Expand performance panel' }));
+    await flushUiThread();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Close performance panel' }));
+
+    expect(usePerformancePanelStore.getState().visible).toBe(false);
+    expect(screen.queryByRole('header', { name: 'Performance' })).not.toBeOnTheScreen();
+    expect(
+      screen.queryByRole('button', { name: 'Expand performance panel' }),
+    ).not.toBeOnTheScreen();
   });
 
   it('copies a report of the session and confirms briefly', async () => {

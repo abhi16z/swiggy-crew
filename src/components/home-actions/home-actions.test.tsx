@@ -1,4 +1,6 @@
-import { render, screen, userEvent, within } from '@testing-library/react-native';
+import { act, render, screen, userEvent, within } from '@testing-library/react-native';
+
+import { useTripsStore } from '@/components/discover-feed/store';
 
 import { HomeActions, HomeSheets } from '.';
 
@@ -54,6 +56,7 @@ function HomeWithSheets({ homeMounted = true }: { homeMounted?: boolean }) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  useTripsStore.setState(useTripsStore.getInitialState());
 });
 
 describe('HomeActions', () => {
@@ -87,6 +90,20 @@ describe('HomeActions', () => {
     await user.press(screen.getByRole('button', { name: 'Open Ask Crew' }));
 
     expect(homeRenders).toHaveBeenCalledTimes(1);
+  });
+
+  it('badges the Filters button only while a trip type is applied', async () => {
+    await render(<HomeActions />);
+    expect(screen.queryByTestId('filters-badge')).not.toBeOnTheScreen();
+
+    await act(async () => useTripsStore.getState().applyTripFilter('villa'));
+    expect(within(screen.getByTestId('filters-badge')).getByText('1')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Open filters' })).toHaveAccessibilityValue({
+      text: '1 filter applied',
+    });
+
+    await act(async () => useTripsStore.getState().applyTripFilter('all'));
+    expect(screen.queryByTestId('filters-badge')).not.toBeOnTheScreen();
   });
 
   it('closes both sheets when Home loses focus so they never cover another tab', async () => {

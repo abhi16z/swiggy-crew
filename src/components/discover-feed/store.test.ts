@@ -7,7 +7,7 @@ const mockFetch = jest.fn<Promise<Response>, [string, RequestInit?]>();
 
 beforeEach(() => {
   globalThis.fetch = mockFetch as typeof fetch;
-  useTripsStore.setState({ status: 'idle', trips: [] });
+  useTripsStore.setState(useTripsStore.getInitialState());
 });
 
 afterEach(() => {
@@ -71,6 +71,48 @@ describe('trips store', () => {
     await loadTrips();
 
     expect(useTripsStore.getState()).toMatchObject({ status: 'success', trips });
+  });
+
+  it('shows every trip until a trip type is applied', async () => {
+    const trips = makeTrips(2, ['villa', 'experience']);
+    mockFetch.mockResolvedValueOnce(jsonResponse(trips));
+
+    await loadTrips();
+
+    expect(useTripsStore.getState()).toMatchObject({ tripFilter: 'all', visibleTrips: trips });
+  });
+
+  it('keeps only the trips of the applied type, and all of them again for "all"', async () => {
+    const trips = makeTrips(4, ['villa', 'experience']);
+    mockFetch.mockResolvedValueOnce(jsonResponse(trips));
+    await loadTrips();
+
+    useTripsStore.getState().applyTripFilter('villa');
+    expect(useTripsStore.getState().visibleTrips).toEqual([trips[0], trips[2]]);
+
+    useTripsStore.getState().applyTripFilter('all');
+    expect(useTripsStore.getState().visibleTrips).toEqual(trips);
+  });
+
+  // Filters are applied without a refetch, and a load that finishes later still respects them.
+  it('applies the chosen type to trips that finish loading after it', async () => {
+    const trips = makeTrips(3, ['flight_stay', 'villa']);
+    mockFetch.mockResolvedValueOnce(jsonResponse(trips));
+
+    useTripsStore.getState().applyTripFilter('flight_stay');
+    await loadTrips();
+
+    expect(useTripsStore.getState().visibleTrips).toEqual([trips[0], trips[2]]);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows no trips for a type the feed does not have', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(2, ['villa'])));
+    await loadTrips();
+
+    useTripsStore.getState().applyTripFilter('experience');
+
+    expect(useTripsStore.getState().visibleTrips).toEqual([]);
   });
 
   // A request that never answers on a weak network must not leave the feed loading forever.

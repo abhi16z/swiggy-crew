@@ -1,4 +1,5 @@
-import { render, screen, userEvent, within } from '@testing-library/react-native';
+import { act, render, screen, userEvent, within } from '@testing-library/react-native';
+import { FlatList } from 'react-native';
 
 import { DiscoverFeed } from '.';
 import { FEED_BATCH_SIZE, SKELETON_COUNT } from './constants';
@@ -10,7 +11,7 @@ const mockFetch = jest.fn<Promise<Response>, [string, RequestInit?]>();
 
 beforeEach(() => {
   globalThis.fetch = mockFetch as typeof fetch;
-  useTripsStore.setState({ status: 'idle', trips: [] });
+  useTripsStore.setState(useTripsStore.getInitialState());
 });
 
 afterEach(() => {
@@ -94,6 +95,23 @@ describe('DiscoverFeed', () => {
     await render(<DiscoverFeed />);
 
     expect(await screen.findByText('No trips to show right now.')).toBeOnTheScreen();
+  });
+
+  it('shows only the applied trip type and scrolls back to the top, animated', async () => {
+    const scrollToOffset = jest.spyOn(FlatList.prototype, 'scrollToOffset');
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(4, ['villa', 'experience'])));
+    await render(<DiscoverFeed />);
+    await screen.findByText('4 trips');
+    expect(scrollToOffset).not.toHaveBeenCalled();
+
+    await act(async () => useTripsStore.getState().applyTripFilter('villa'));
+
+    expect(screen.getByText('Trip 1')).toBeOnTheScreen();
+    expect(screen.getByText('Trip 3')).toBeOnTheScreen();
+    expect(screen.queryByText('Trip 2')).not.toBeOnTheScreen();
+    expect(screen.getByText('2 trips')).toBeOnTheScreen();
+    expect(scrollToOffset).toHaveBeenCalledWith({ offset: 0, animated: true });
+    scrollToOffset.mockRestore();
   });
 
   // If the screen is ever remounted (e.g. a tab switch), the stored trips show without a refetch.

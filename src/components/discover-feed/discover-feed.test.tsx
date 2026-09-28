@@ -1,7 +1,7 @@
 import { act, render, screen, userEvent, within } from '@testing-library/react-native';
 
 import { DiscoverFeed } from '.';
-import { FEED_BATCH_SIZE, SKELETON_COUNT } from './constants';
+import { FEED_BATCH_SIZE, FEED_WINDOW_SIZE, SKELETON_COUNT } from './constants';
 import { useTripsStore } from './store';
 import { jsonResponse, makeTrips } from './test-data';
 
@@ -128,6 +128,28 @@ describe('DiscoverFeed', () => {
     );
 
     expect(screen.getByTestId('trip-feed')).not.toBe(list);
+  });
+
+  it('says so when the applied trip type has no trips', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(2, ['villa'])));
+    await render(<DiscoverFeed />);
+    await screen.findByText('2 trips');
+
+    await act(async () =>
+      useTripsStore.getState().applyFilters({ tripFilter: 'experience', tripSort: 'recommended' }),
+    );
+
+    expect(screen.getByText('0 trips')).toBeOnTheScreen();
+    expect(screen.getByText('No trips to show right now.')).toBeOnTheScreen();
+  });
+
+  // FlatList keeps 21 screens of cards built by default; low-end phones cannot spare that memory.
+  it('keeps only a small window of cards built around the visible screen', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(1)));
+    await render(<DiscoverFeed />);
+    await screen.findByText('Trip 1');
+
+    expect(screen.getByTestId('trip-feed')).toHaveProp('windowSize', FEED_WINDOW_SIZE);
   });
 
   // If the screen is ever remounted (e.g. a tab switch), the stored trips show without a refetch.

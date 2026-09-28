@@ -127,6 +127,18 @@ describe('trips store', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
+  // A new visibleTrips array re-renders the feed; re-applying the same filters must not.
+  it('keeps the visible trips as they are when the applied filters did not change', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(3, ['villa', 'experience'])));
+    await loadTrips();
+    applyFilters({ tripFilter: 'villa', tripSort: 'top_rated' });
+    const visible = useTripsStore.getState().visibleTrips;
+
+    applyFilters({ tripFilter: 'villa', tripSort: 'top_rated' });
+
+    expect(useTripsStore.getState().visibleTrips).toBe(visible);
+  });
+
   it('shows no trips for a type the feed does not have', async () => {
     mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(2, ['villa'])));
     await loadTrips();

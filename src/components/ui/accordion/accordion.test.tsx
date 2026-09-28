@@ -1,9 +1,35 @@
-import { render, screen, userEvent } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, userEvent } from '@testing-library/react-native';
 import { Text } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { Accordion } from '.';
+import { EXPAND_MS, REDUCE_MOTION_MS } from './constants';
+
+// Only the reduced-motion setting is replaced; animations stay real on Jest timers.
+jest.mock('react-native-reanimated', () => ({
+  __esModule: true,
+  ...jest.requireActual<object>('react-native-reanimated'),
+  useReducedMotion: jest.fn(() => false),
+}));
+
+const CONTENT_HEIGHT = 120;
 
 const header = () => screen.getByRole('button', { name: 'Sort by, Top rated' });
+
+// The animated wrapper around the content: Text -> measured View -> animated body.
+const body = () => screen.getByText('Content', { includeHiddenElements: true }).parent!.parent!;
+
+async function measureContent() {
+  await fireEvent(screen.getByText('Content'), 'layout', {
+    nativeEvent: { layout: { x: 0, y: 0, width: 300, height: CONTENT_HEIGHT } },
+  });
+}
+
+async function advance(ms: number) {
+  await act(async () => {
+    jest.advanceTimersByTime(ms);
+  });
+}
 
 async function renderAccordion() {
   await render(
@@ -51,5 +77,42 @@ describe('Accordion', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Details' })).toBeOnTheScreen();
+  });
+
+  describe('height animation', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.mocked(useReducedMotion).mockReturnValue(false);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('opens to the measured content height and closes back to zero', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      await renderAccordion();
+
+      await user.press(header());
+      await measureContent();
+      await advance(EXPAND_MS);
+      expect(body()).toHaveAnimatedStyle({ height: CONTENT_HEIGHT });
+
+      await user.press(header());
+      await advance(EXPAND_MS);
+      expect(body()).toHaveAnimatedStyle({ height: 0 });
+    });
+
+    it('finishes sooner when the user prefers reduced motion', async () => {
+      jest.mocked(useReducedMotion).mockReturnValue(true);
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      await renderAccordion();
+
+      await user.press(header());
+      await measureContent();
+      await advance(REDUCE_MOTION_MS);
+
+      expect(body()).toHaveAnimatedStyle({ height: CONTENT_HEIGHT });
+    });
   });
 });

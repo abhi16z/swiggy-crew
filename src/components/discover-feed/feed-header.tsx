@@ -15,10 +15,6 @@ export const FeedHeader = memo(function FeedHeader({ status, count }: FeedHeader
 
   return (
     <View className="gap-6 pt-2 pb-4">
-      <View className="min-h-11 justify-center">
-        <Text className="text-2xl font-bold text-neutral-900 dark:text-white">Crew</Text>
-      </View>
-
       <View className="gap-1">
         <Text
           accessibilityRole="header"

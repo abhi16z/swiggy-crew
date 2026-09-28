@@ -26,6 +26,16 @@ This doc contains components and use cases
 
 - Wrap floating content in a tab screen (like the Home buttons) so it stays above the native tab bar. Pads by the tab bar inset on iOS; a plain overlay on Android, where screens already end above the tab bar.
 
+## PerformancePanel
+
+- Mounted once in the root layout, above every tab and sheet; switched on from Settings and remembered across launches. Opens collapsed: the same card showing only its top row of tiles (UI FPS, drops, JS thread), with no header; tap it to expand to the full card (design 08).
+- Frames are sampled on the UI thread with Reanimated's `useFrameCallback`, so scroll and sheet jank is measured on the thread that renders it; the readout is labelled "UI FPS" for that reason. A drop is a frame slower than 1000/45 ms; the sparkline and chart also mark "slow" frames between 16.7 and 22.2 ms.
+- Frame times are vsync timestamps, so on a 60 Hz screen a frame is 16.7 ms or a multiple of it. One missed vsync is a 33.3 ms frame (30 FPS) and counts as a drop, even though the 1-second FPS only dips to 59.
+- The compact readouts are `TextInput`s driven by shared values (`readout.tsx`). React never re-renders them and they keep moving while the JS thread is blocked. The JS indicator is a heartbeat: a JS `requestAnimationFrame` loop stamps a shared value every few frames, and the UI thread reports "blocked" when the stamp is older than 100 ms. Blocks of 50 ms or more are reported after the fact too.
+- Everything redraws 4 times a second. While expanded, one snapshot per redraw is sent to React through a store that only the expanded card subscribes to; the frame-time chart is the one cost worth knowing about (120 bars).
+- Session p50/p95 come from a 0.1 ms histogram, so memory stays flat however long the session runs. Reset clears the session; Copy report puts a text summary on the clipboard (`expo-clipboard`).
+- The first frame after the app returns to the foreground is discarded; it spans the background gap, not a frame.
+
 ## RemoteImage
 
 - Use for every remote image. Built on `expo-image` (disk and memory cache, downscaled to the view size on Android).

@@ -1,10 +1,20 @@
-import { Text, View } from 'react-native';
+import { useCallback, useState } from 'react';
 
-// Entry point for the performance HUD (designs 07–09).
+import { CompactHud } from './compact-hud';
+import { ExpandedHud } from './expanded-hud';
+import { usePerfTracker } from './use-perf-tracker';
+
+// Performance HUD (designs 07–09). Opens compact; the tracker keeps running across both
+// states, so expanding shows the session so far rather than starting over.
 export default function PerformancePanelBody() {
-  return (
-    <View className="mx-4 min-h-11 justify-center rounded-full bg-neutral-900 px-5">
-      <Text className="text-base font-medium text-white">Performance HUD</Text>
-    </View>
+  const [expanded, setExpanded] = useState(false);
+  const tracker = usePerfTracker(expanded);
+  const expand = useCallback(() => setExpanded(true), []);
+  const collapse = useCallback(() => setExpanded(false), []);
+
+  return expanded ? (
+    <ExpandedHud tracker={tracker} onCollapse={collapse} />
+  ) : (
+    <CompactHud tracker={tracker} onExpand={expand} />
   );
 }

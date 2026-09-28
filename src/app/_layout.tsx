@@ -9,13 +9,17 @@ import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-c
 
 import AppTabs from '@/components/app-tabs';
 import { HomeSheets } from '@/components/home-actions';
+import { OnboardingGate, useOnboardingHydrated } from '@/components/onboarding';
 import { PerformancePanel } from '@/components/performance-panel';
 import { useHideSplashScreen } from '@/lib/splash';
 
-// Order is paint order: sheets cover the tab bar, the performance panel covers the sheets.
-// KeyboardProvider drives keyboard-following UI (the Ask Crew input) on the UI thread.
+// Order is paint order: sheets cover the tab bar, the performance panel covers the sheets, and
+// onboarding covers everything. KeyboardProvider drives keyboard-following UI (the Ask Crew
+// input) on the UI thread.
 export default function RootLayout() {
-  useHideSplashScreen();
+  // Until the saved onboarding state is read, the splash stays up, so a first launch never
+  // flashes Home before onboarding.
+  useHideSplashScreen(useOnboardingHydrated());
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -24,6 +28,7 @@ export default function RootLayout() {
           <AppTabs />
           <HomeSheets />
           <PerformancePanel />
+          <OnboardingGate />
         </SafeAreaProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>

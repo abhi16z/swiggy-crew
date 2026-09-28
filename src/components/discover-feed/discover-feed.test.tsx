@@ -104,12 +104,28 @@ describe('DiscoverFeed', () => {
     await screen.findByText('4 trips');
     expect(scrollToOffset).not.toHaveBeenCalled();
 
-    await act(async () => useTripsStore.getState().applyTripFilter('villa'));
+    await act(async () =>
+      useTripsStore.getState().applyFilters({ tripFilter: 'villa', tripSort: 'recommended' }),
+    );
 
     expect(screen.getByText('Trip 1')).toBeOnTheScreen();
     expect(screen.getByText('Trip 3')).toBeOnTheScreen();
     expect(screen.queryByText('Trip 2')).not.toBeOnTheScreen();
     expect(screen.getByText('2 trips')).toBeOnTheScreen();
+    expect(scrollToOffset).toHaveBeenCalledWith({ offset: 0, animated: true });
+    scrollToOffset.mockRestore();
+  });
+
+  it('scrolls back to the top when only the sort changes', async () => {
+    const scrollToOffset = jest.spyOn(FlatList.prototype, 'scrollToOffset');
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(2)));
+    await render(<DiscoverFeed />);
+    await screen.findByText('2 trips');
+
+    await act(async () =>
+      useTripsStore.getState().applyFilters({ tripFilter: 'all', tripSort: 'top_rated' }),
+    );
+
     expect(scrollToOffset).toHaveBeenCalledWith({ offset: 0, animated: true });
     scrollToOffset.mockRestore();
   });

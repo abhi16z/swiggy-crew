@@ -1,76 +1,134 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
-import { Pressable, Text, useColorScheme, View } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  useWindowDimensions,
+  View,
+} from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTripsStore } from '@/components/discover-feed/store';
 import { formatTripCount } from '@/components/discover-feed/utils';
 import { ICON_COLORS } from '@/components/trip-card/constants';
+import { Accordion } from '@/components/ui/accordion';
 import type { BottomSheetSnap } from '@/components/ui/bottom-sheet';
+import { halfOffset } from '@/components/ui/bottom-sheet/utils';
 
-import { TRIP_FILTER_OPTIONS } from './constants';
+import { SHEET_HANDLE_HEIGHT, SORT_OPTIONS, TRIP_FILTER_OPTIONS } from './constants';
+import { SortOption } from './sort-option';
 import { TripTypeCard } from './trip-type-card';
 import { countTripsByFilter } from './utils';
 
 type FiltersSheetBodyProps = {
   onSnapTo: (snap: BottomSheetSnap) => void;
+  /** The sheet is at full height; otherwise it rests at half. */
+  fullHeight: boolean;
 };
 
-// Design 10, compacted so the types and their buttons fit at half height (sorting comes
-// later, collapsed). A choice here reaches the feed only through "Show N trips"; the sheet
-// remounts this body after every close, so an unapplied choice is dropped.
-export default function FiltersSheetBody({ onSnapTo }: FiltersSheetBodyProps) {
+// Design 10, compacted so the types and the buttons fit at half height. Choices reach the
+// feed only through "Show N trips"; the sheet remounts this body after every close, so
+// unapplied choices are dropped and Sort by starts collapsed again.
+export default function FiltersSheetBody({ onSnapTo, fullHeight }: FiltersSheetBodyProps) {
   const trips = useTripsStore((state) => state.trips);
   const tripFilter = useTripsStore((state) => state.tripFilter);
-  const applyTripFilter = useTripsStore((state) => state.applyTripFilter);
-  const [pending, setPending] = useState(tripFilter);
+  const tripSort = useTripsStore((state) => state.tripSort);
+  const applyFilters = useTripsStore((state) => state.applyFilters);
+  const [pendingFilter, setPendingFilter] = useState(tripFilter);
+  const [pendingSort, setPendingSort] = useState(tripSort);
   const counts = useMemo(() => countTripsByFilter(trips), [trips]);
   const colors = ICON_COLORS[useColorScheme() === 'dark' ? 'dark' : 'light'];
 
+  // The sheet is full height and slides down to rest at half, so its lower part is then
+  // off screen. Cap the body to the part on screen, above the home indicator or nav bar, so
+  // the options scroll there and the buttons stay visible.
+  const { height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const visibleAtHalf = height - insets.top - halfOffset(height, insets.top);
+  const maxHeight = fullHeight ? undefined : visibleAtHalf - SHEET_HANDLE_HEIGHT - insets.bottom;
+
   const showTrips = () => {
-    applyTripFilter(pending);
+    applyFilters({ tripFilter: pendingFilter, tripSort: pendingSort });
     onSnapTo('closed');
   };
 
-  return (
-    <View className="gap-4 px-4">
-      <View className="gap-1">
-        <View className="flex-row items-center justify-between">
-          <Text
-            accessibilityRole="header"
-            className="text-base font-semibold text-neutral-900 dark:text-white"
-          >
-            Trip type
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Close filters"
-            onPress={() => onSnapTo('closed')}
-            className="-mr-2.5 h-11 w-11 items-center justify-center rounded-full"
-          >
-            <Ionicons name="close" size={22} color={colors.primary} />
-          </Pressable>
-        </View>
-        <View
-          accessibilityRole="radiogroup"
-          accessibilityLabel="Trip type"
-          className="flex-row flex-wrap gap-2"
-        >
-          {TRIP_FILTER_OPTIONS.map((option) => (
-            <TripTypeCard
-              key={option.value}
-              {...option}
-              count={counts[option.value]}
-              selected={option.value === pending}
-              onSelect={setPending}
-            />
-          ))}
-        </View>
-      </View>
+  const reset = () => {
+    setPendingFilter('all');
+    setPendingSort('recommended');
+  };
 
-      <View className="flex-row gap-2">
+  return (
+    <View className="shrink" style={{ maxHeight }}>
+      {/* Scrolls only when the content overflows; until then drags still move the sheet. */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        bounces={false}
+        alwaysBounceVertical={false}
+      >
+        <View className="gap-1">
+          <View className="flex-row items-center justify-between">
+            <Text
+              accessibilityRole="header"
+              className="text-base font-semibold text-neutral-900 dark:text-white"
+            >
+              Trip type
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Close filters"
+              onPress={() => onSnapTo('closed')}
+              className="-mr-2.5 h-11 w-11 items-center justify-center rounded-full"
+            >
+              <Ionicons name="close" size={22} color={colors.primary} />
+            </Pressable>
+          </View>
+          <View
+            accessibilityRole="radiogroup"
+            accessibilityLabel="Trip type"
+            className="flex-row flex-wrap gap-2"
+          >
+            {TRIP_FILTER_OPTIONS.map((option) => (
+              <TripTypeCard
+                key={option.value}
+                {...option}
+                count={counts[option.value]}
+                selected={option.value === pendingFilter}
+                onSelect={setPendingFilter}
+              />
+            ))}
+          </View>
+        </View>
+
+        <Accordion
+          title="Sort by"
+          summary={SORT_OPTIONS.find((option) => option.value === pendingSort)?.label}
+        >
+          <View
+            accessibilityRole="radiogroup"
+            accessibilityLabel="Sort by"
+            className="mb-1 rounded-2xl border border-neutral-200 dark:border-neutral-800"
+          >
+            {SORT_OPTIONS.map((option, index) => (
+              <SortOption
+                key={option.value}
+                {...option}
+                selected={option.value === pendingSort}
+                divider={index > 0}
+                onSelect={setPendingSort}
+              />
+            ))}
+          </View>
+        </Accordion>
+      </ScrollView>
+
+      <View className="flex-row gap-2 px-4 pt-3">
         <Pressable
           accessibilityRole="button"
-          onPress={() => setPending('all')}
+          onPress={reset}
           className="min-h-12 flex-1 items-center justify-center rounded-full border border-neutral-200 dark:border-neutral-700"
         >
           <Text className="text-base font-semibold text-neutral-900 dark:text-white">Reset</Text>
@@ -81,10 +139,17 @@ export default function FiltersSheetBody({ onSnapTo }: FiltersSheetBodyProps) {
           className="min-h-12 flex-1 items-center justify-center rounded-full bg-neutral-900 dark:bg-white"
         >
           <Text className="text-base font-semibold text-white dark:text-neutral-900">
-            Show {formatTripCount(counts[pending])}
+            Show {formatTripCount(counts[pendingFilter])}
           </Text>
         </Pressable>
       </View>
     </View>
   );
 }
+
+// The gesture-handler ScrollView (it coordinates with the sheet's drag) is not a core
+// component, so NativeWind classes don't reach it.
+const styles = StyleSheet.create({
+  scroll: { flexGrow: 0 },
+  content: { gap: 8, paddingHorizontal: 16 },
+});

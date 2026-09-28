@@ -3,20 +3,21 @@ import { create } from 'zustand';
 import type { TripBundle } from '@/components/trip-card';
 
 import { FETCH_TIMEOUT_MS, TRIPS_URL } from './constants';
-import { filterTrips } from './utils';
+import { getVisibleTrips } from './utils';
 
 export type FeedStatus = 'idle' | 'loading' | 'success' | 'error';
 
 export type TripFilter = TripBundle['kind'] | 'all';
+export type TripSort = 'recommended' | 'price_low' | 'top_rated';
+export type AppliedFilters = { tripFilter: TripFilter; tripSort: TripSort };
 
-type TripsState = {
+type TripsState = AppliedFilters & {
   status: FeedStatus;
   trips: TripBundle[];
-  /** The applied trip type, and the trips that pass it. The feed shows `visibleTrips`. */
-  tripFilter: TripFilter;
+  /** The trips that pass `tripFilter`, in `tripSort` order. The feed shows these. */
   visibleTrips: TripBundle[];
   loadTrips: () => Promise<void>;
-  applyTripFilter: (tripFilter: TripFilter) => void;
+  applyFilters: (filters: AppliedFilters) => void;
 };
 
 // In memory only: the data is static, so it is fetched once per app launch.
@@ -24,6 +25,7 @@ export const useTripsStore = create<TripsState>()((set, get) => ({
   status: 'idle',
   trips: [],
   tripFilter: 'all',
+  tripSort: 'recommended',
   visibleTrips: [],
 
   loadTrips: async () => {
@@ -38,7 +40,7 @@ export const useTripsStore = create<TripsState>()((set, get) => ({
       const response = await fetch(TRIPS_URL, { signal: controller.signal });
       if (!response.ok) throw new Error(`Trips request failed with ${response.status}`);
       const trips: TripBundle[] = await response.json();
-      set({ status: 'success', trips, visibleTrips: filterTrips(trips, get().tripFilter) });
+      set({ status: 'success', trips, visibleTrips: getVisibleTrips(trips, get()) });
     } catch {
       set({ status: 'error' });
     } finally {
@@ -46,9 +48,10 @@ export const useTripsStore = create<TripsState>()((set, get) => ({
     }
   },
 
-  // Filters the stored trips once, here, so the feed never filters while rendering.
-  applyTripFilter: (tripFilter) => {
-    if (tripFilter === get().tripFilter) return;
-    set({ tripFilter, visibleTrips: filterTrips(get().trips, tripFilter) });
+  // Filters and sorts the stored trips once, here, so the feed never does it while rendering.
+  applyFilters: (filters) => {
+    const { tripFilter, tripSort, trips } = get();
+    if (filters.tripFilter === tripFilter && filters.tripSort === tripSort) return;
+    set({ ...filters, visibleTrips: getVisibleTrips(trips, filters) });
   },
 }));

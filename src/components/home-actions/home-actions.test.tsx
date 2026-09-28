@@ -1,6 +1,6 @@
 import { act, render, screen, userEvent, within } from '@testing-library/react-native';
 
-import { useTripsStore } from '@/components/discover-feed/store';
+import { useTripsStore, type AppliedFilters } from '@/components/discover-feed/store';
 
 import { HomeActions, HomeSheets } from '.';
 
@@ -92,17 +92,27 @@ describe('HomeActions', () => {
     expect(homeRenders).toHaveBeenCalledTimes(1);
   });
 
-  it('badges the Filters button only while a trip type is applied', async () => {
+  // A trip type other than All counts 1, a sort other than Recommended counts 1.
+  it('badges the Filters button with how many filters are applied', async () => {
+    const apply = (filters: AppliedFilters) =>
+      act(async () => useTripsStore.getState().applyFilters(filters));
+    const badge = () => within(screen.getByTestId('filters-badge'));
+    const filtersButton = () => screen.getByRole('button', { name: 'Open filters' });
     await render(<HomeActions />);
     expect(screen.queryByTestId('filters-badge')).not.toBeOnTheScreen();
 
-    await act(async () => useTripsStore.getState().applyTripFilter('villa'));
-    expect(within(screen.getByTestId('filters-badge')).getByText('1')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'Open filters' })).toHaveAccessibilityValue({
-      text: '1 filter applied',
-    });
+    await apply({ tripFilter: 'villa', tripSort: 'recommended' });
+    expect(badge().getByText('1')).toBeOnTheScreen();
+    expect(filtersButton()).toHaveAccessibilityValue({ text: '1 filter applied' });
 
-    await act(async () => useTripsStore.getState().applyTripFilter('all'));
+    await apply({ tripFilter: 'villa', tripSort: 'top_rated' });
+    expect(badge().getByText('2')).toBeOnTheScreen();
+    expect(filtersButton()).toHaveAccessibilityValue({ text: '2 filters applied' });
+
+    await apply({ tripFilter: 'all', tripSort: 'price_low' });
+    expect(badge().getByText('1')).toBeOnTheScreen();
+
+    await apply({ tripFilter: 'all', tripSort: 'recommended' });
     expect(screen.queryByTestId('filters-badge')).not.toBeOnTheScreen();
   });
 

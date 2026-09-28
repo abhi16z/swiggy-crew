@@ -10,6 +10,12 @@ This doc contains components and use cases
 - Sheets that must cover the native tab bar are mounted in the root layout after `AppTabs` and opened through shared refs. Refer to `src/components/home-actions/sheets.tsx` and `sheet-refs.ts`.
 - The Android back button closes an open sheet; no per-sheet wiring is needed.
 
+## Accordion
+
+- A titled section that starts collapsed. An optional `summary` sits beside the chevron so the current value reads without expanding (e.g. Sort by · Top rated).
+- The content mounts on first expand and then stays mounted; the height animation runs on the UI thread and shortens under reduced motion. Collapsed content takes no touches and is hidden from screen readers.
+- Uncontrolled: to reset it to collapsed, remount it. Refer to `src/components/home-actions/filters-sheet/filters-sheet-body.tsx`.
+
 ## ScreenSafeArea
 
 - Every tab page wraps its content in it, so nothing draws under the status bar or notch. It pads the top only: the app is portrait, and the bottom belongs to the tab bar.

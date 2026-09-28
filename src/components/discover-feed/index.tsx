@@ -25,12 +25,14 @@ export function DiscoverFeed() {
     void loadTrips();
   }, [loadTrips]);
 
-  // A newly applied filter shows its trips from the top. Subscribing (not selecting) keeps
-  // the filter itself from re-rendering the feed; only the new trips do.
+  // Newly applied filters show their trips from the top. Subscribing (not selecting) keeps
+  // the filters themselves from re-rendering the feed; only the new trips do.
   useEffect(
     () =>
       useTripsStore.subscribe((state, previous) => {
-        if (state.tripFilter === previous.tripFilter) return;
+        if (state.tripFilter === previous.tripFilter && state.tripSort === previous.tripSort) {
+          return;
+        }
         listRef.current?.scrollToOffset({ offset: 0, animated: true });
       }),
     [],

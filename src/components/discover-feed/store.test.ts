@@ -1,6 +1,7 @@
 import { FETCH_TIMEOUT_MS, TRIPS_URL } from './constants';
-import { useTripsStore, type AppliedFilters } from './store';
+import { useTripsStore } from './store';
 import { jsonResponse, makeTrips } from './test-data';
+import type { AppliedFilters } from './types';
 
 const realFetch = globalThis.fetch;
 const mockFetch = jest.fn<Promise<Response>, [string, RequestInit?]>();
@@ -49,6 +50,34 @@ describe('trips store', () => {
     await loadTrips();
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  // Ask Crew reuses the feed's request, so a second caller must wait for it to finish.
+  it('resolves every caller only once the load in flight has finished', async () => {
+    let respond: (response: Response) => void = () => {};
+    mockFetch.mockReturnValueOnce(new Promise((resolve) => (respond = resolve)));
+    const first = loadTrips();
+    let secondDone = false;
+    const second = loadTrips().then(() => (secondDone = true));
+
+    await Promise.resolve();
+    expect(secondDone).toBe(false);
+    respond(jsonResponse(makeTrips(2)));
+    await Promise.all([first, second]);
+
+    expect(useTripsStore.getState().trips).toHaveLength(2);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops rows that are not trips or have a trip type this build does not know', async () => {
+    const [trip] = makeTrips(1);
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse([trip, { ...trip, id: 'cruise', kind: 'cruise' }, null, { kind: 'villa' }]),
+    );
+
+    await loadTrips();
+
+    expect(useTripsStore.getState().trips).toEqual([trip]);
   });
 
   it.each([

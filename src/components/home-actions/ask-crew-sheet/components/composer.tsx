@@ -1,15 +1,11 @@
 import { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, useColorScheme, View } from 'react-native';
 import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  getDraft,
-  sendMessage,
-  setDraft,
-  stopReply,
-  useActiveChatStreaming,
-} from '../chat/store';
+import { ICON_COLORS } from '@/constants/colors';
+
+import { getDraft, sendMessage, setDraft, stopReply, useActiveChatStreaming } from '../chat/store';
 
 type ComposerProps = {
   enabled: boolean;
@@ -19,6 +15,7 @@ type ComposerProps = {
 
 export function Composer({ enabled, onEngage }: ComposerProps) {
   const streaming = useActiveChatStreaming();
+  const placeholderColor = ICON_COLORS[useColorScheme() === 'dark' ? 'dark' : 'light'].muted;
   const { bottom } = useSafeAreaInsets();
   const [text, setText] = useState(getDraft);
 
@@ -44,7 +41,7 @@ export function Composer({ enabled, onEngage }: ComposerProps) {
         <TextInput
           accessibilityLabel="Message Crew"
           placeholder={enabled ? 'Ask about a destination' : 'Add an OpenRouter key to chat'}
-          placeholderTextColor="#8e8e93"
+          placeholderTextColor={placeholderColor}
           value={text}
           onChangeText={change}
           onPressIn={onEngage}

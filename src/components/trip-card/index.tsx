@@ -3,9 +3,9 @@ import { memo, useCallback, useState } from 'react';
 import { Pressable, Text, useColorScheme, View } from 'react-native';
 
 import { RemoteImage } from '@/components/ui/remote-image';
-import { CARD_IMAGE_HEIGHT, CARD_IMAGE_RADIUS } from '@/components/ui/remote-image/constants';
+import { ICON_COLORS } from '@/constants/colors';
 
-import { ICON_COLORS, KIND_BADGES, STAR_COLOR } from './constants';
+import { CARD_IMAGE_HEIGHT, CARD_IMAGE_RADIUS, KIND_BADGES, STAR_COLOR } from './constants';
 import { TripDetails } from './trip-details';
 import type { TripCardProps } from './types';
 import { formatDays, formatPrice, getLoaderUri } from './utils';
@@ -82,7 +82,7 @@ export const TripCard = memo(function TripCard({ trip }: TripCardProps) {
           </View>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Details"
+            accessibilityLabel={`Details for ${destination}`}
             accessibilityState={{ expanded }}
             onPress={toggleDetails}
             className={`min-h-11 flex-row items-center gap-2 rounded-full border border-neutral-200 px-5 active:opacity-70 dark:border-neutral-700 ${

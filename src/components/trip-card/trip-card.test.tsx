@@ -42,7 +42,7 @@ describe('TripCard', () => {
     expect(screen.getByText('₹34,300')).toBeOnTheScreen();
     expect(screen.getByText('3 days · per person')).toBeOnTheScreen();
     expect(screen.getByLabelText('Rated 4.7 out of 5')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'Details' })).toBeCollapsed();
+    expect(screen.getByRole('button', { name: 'Details for Serengeti' })).toBeCollapsed();
     expect(screen.queryByText('Day by day')).not.toBeOnTheScreen();
   });
 
@@ -50,16 +50,16 @@ describe('TripCard', () => {
     const user = userEvent.setup();
     await render(<TripCard trip={SERENGETI} />);
 
-    await user.press(screen.getByRole('button', { name: 'Details' }));
+    await user.press(screen.getByRole('button', { name: 'Details for Serengeti' }));
 
-    expect(screen.getByRole('button', { name: 'Details' })).toBeExpanded();
+    expect(screen.getByRole('button', { name: 'Details for Serengeti' })).toBeExpanded();
     expect(screen.getByText('3 highlights')).toBeOnTheScreen();
     expect(
       screen.getByLabelText('Day 1: Arrive and get oriented around Serengeti'),
     ).toBeOnTheScreen();
     expect(screen.getByLabelText('Day 3: Safari jeep at sunset')).toBeOnTheScreen();
 
-    await user.press(screen.getByRole('button', { name: 'Details' }));
+    await user.press(screen.getByRole('button', { name: 'Details for Serengeti' }));
 
     expect(screen.queryByText('Day by day')).not.toBeOnTheScreen();
   });
@@ -68,7 +68,7 @@ describe('TripCard', () => {
     const user = userEvent.setup();
     await render(<TripCard trip={KYOTO} />);
 
-    await user.press(screen.getByRole('button', { name: 'Details' }));
+    await user.press(screen.getByRole('button', { name: 'Details for Kyoto' }));
 
     expect(screen.getByText('1 highlight')).toBeOnTheScreen();
   });
@@ -88,7 +88,7 @@ describe('TripCard', () => {
   it('starts closed when the card is reused for another trip', async () => {
     const user = userEvent.setup();
     await render(<TripCard trip={SERENGETI} />);
-    await user.press(screen.getByRole('button', { name: 'Details' }));
+    await user.press(screen.getByRole('button', { name: 'Details for Serengeti' }));
 
     await screen.rerender(<TripCard trip={KYOTO} />);
 

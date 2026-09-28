@@ -2,7 +2,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo } from 'react';
 import { StyleSheet, Text, useColorScheme, View } from 'react-native';
 
-import { HIGHLIGHT_CARD_WIDTH, ICON_COLORS } from './constants';
+import { ICON_COLORS } from '@/constants/colors';
+
+import { HIGHLIGHT_CARD_WIDTH } from './constants';
 import type { TripHighlight } from './types';
 import { getHighlightIcon } from './utils';
 

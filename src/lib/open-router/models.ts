@@ -17,18 +17,29 @@ function toPrice(value: string | undefined) {
   return Number.isFinite(price) ? price : 0;
 }
 
+// `localeCompare` goes through Intl on Hermes, which is slow across hundreds of models; the
+// lowercased key sorts by name (then id) with plain comparisons.
+function bySearchKey(a: OpenRouterModel, b: OpenRouterModel) {
+  if (a.searchKey < b.searchKey) return -1;
+  return a.searchKey > b.searchKey ? 1 : 0;
+}
+
 /** Keeps models that can chat in text and slims each one to what the picker shows. */
 export function toChatModels(raw: RawOpenRouterModel[]): OpenRouterModel[] {
   return raw
     .filter(supportsTextChat)
-    .map((model) => ({
-      id: model.id,
-      name: model.name ?? model.id,
-      contextLength: model.context_length ?? null,
-      promptPrice: toPrice(model.pricing?.prompt),
-      completionPrice: toPrice(model.pricing?.completion),
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .map((model) => {
+      const name = model.name ?? model.id;
+      return {
+        id: model.id,
+        name,
+        contextLength: model.context_length ?? null,
+        promptPrice: toPrice(model.pricing?.prompt),
+        completionPrice: toPrice(model.pricing?.completion),
+        searchKey: `${name}\n${model.id}`.toLowerCase(),
+      };
+    })
+    .sort(bySearchKey);
 }
 
 /** "$1.00 / $5.00 per 1M tokens", "Free", or "Variable price" for routers. */
@@ -40,10 +51,11 @@ export function formatPrice(model: Pick<OpenRouterModel, 'promptPrice' | 'comple
   return `${perMillion(promptPrice)} / ${perMillion(completionPrice)} per 1M tokens`;
 }
 
-export function matchesQuery(model: OpenRouterModel, query: string) {
+/** Models whose name or id contains `query`, ignoring case and surrounding spaces. */
+export function filterModels(models: OpenRouterModel[], query: string) {
   const needle = query.trim().toLowerCase();
-  if (!needle) return true;
-  return model.id.toLowerCase().includes(needle) || model.name.toLowerCase().includes(needle);
+  if (!needle) return models;
+  return models.filter((model) => model.searchKey.includes(needle));
 }
 
 async function fetchChatModels() {

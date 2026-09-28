@@ -19,6 +19,7 @@ const MODELS = [
     contextLength: 1_000_000,
     promptPrice: 0.000005,
     completionPrice: 0.000025,
+    searchKey: 'anthropic: claude opus 5\nanthropic/claude-opus-5',
   },
   {
     id: 'google/gemma-4-26b-a4b-it:free',
@@ -26,6 +27,7 @@ const MODELS = [
     contextLength: 131_072,
     promptPrice: 0,
     completionPrice: 0,
+    searchKey: 'google: gemma 4 26b (free)\ngoogle/gemma-4-26b-a4b-it:free',
   },
 ];
 
@@ -88,10 +90,38 @@ describe('OpenRouterSettings', () => {
     await user.type(await screen.findByLabelText('Search models'), 'gemma');
 
     expect(screen.queryByText('Anthropic: Claude Opus 5')).not.toBeOnTheScreen();
-    await user.press(screen.getByText('Google: Gemma 4 26B (free)'));
+    await user.press(screen.getByRole('radio', { name: /Google: Gemma 4 26B \(free\)/ }));
 
     expect(getModelId()).toBe('google/gemma-4-26b-a4b-it:free');
     expect(screen.queryByLabelText('Search models')).not.toBeOnTheScreen();
+  });
+
+  it('marks the chosen model as the checked option', async () => {
+    const user = userEvent.setup();
+    setModelId('anthropic/claude-opus-5');
+    await act(async () => saveApiKey('sk-or-v1-0123456789abcdef'));
+    await renderSettings();
+
+    await user.press(screen.getByRole('button', { name: 'Change model' }));
+
+    expect(await screen.findByRole('radio', { name: /Claude Opus 5/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /Gemma/ })).not.toBeChecked();
+  });
+
+  it('shows why the model list failed to load and loads it again on Retry', async () => {
+    const user = userEvent.setup();
+    jest.mocked(loadChatModels).mockClear();
+    jest
+      .mocked(loadChatModels)
+      .mockRejectedValueOnce(new OpenRouterError('network', 'Network request failed'));
+    await act(async () => saveApiKey('sk-or-v1-0123456789abcdef'));
+    await renderSettings();
+
+    await user.press(screen.getByRole('button', { name: 'Change model' }));
+    await user.press(await screen.findByRole('button', { name: 'Retry loading models' }));
+
+    expect(await screen.findByText('Anthropic: Claude Opus 5')).toBeOnTheScreen();
+    expect(loadChatModels).toHaveBeenCalledTimes(2);
   });
 
   it('removes the saved key', async () => {

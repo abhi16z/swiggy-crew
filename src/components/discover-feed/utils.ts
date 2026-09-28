@@ -1,6 +1,21 @@
 import type { TripBundle } from '@/components/trip-card';
+import { KIND_BADGES } from '@/components/trip-card/constants';
 
-import type { AppliedFilters, TripSort } from './store';
+import type { AppliedFilters, TripSort } from './types';
+
+function isTripBundle(value: unknown): value is TripBundle {
+  if (typeof value !== 'object' || value === null) return false;
+  const { id, kind } = value as { id?: unknown; kind?: unknown };
+  return typeof id === 'string' && typeof kind === 'string' && kind in KIND_BADGES;
+}
+
+/**
+ * The trips in a `travel-bundles.json` payload. A trip type this build does not know is
+ * dropped: it has no badge, filter card or count yet.
+ */
+export function parseTrips(data: unknown): TripBundle[] {
+  return Array.isArray(data) ? data.filter(isTripBundle) : [];
+}
 
 export function formatTripCount(count: number) {
   return count === 1 ? '1 trip' : `${count} trips`;

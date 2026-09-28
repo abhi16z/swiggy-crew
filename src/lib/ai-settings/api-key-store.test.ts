@@ -39,6 +39,17 @@ describe('api key store', () => {
     expect(getApiKey()).toBe('sk-or-v1-new');
   });
 
+  it('returns a key replaced after the launch read, not the first one read', async () => {
+    await SecureStore.setItemAsync(API_KEY_STORAGE_KEY, 'sk-or-v1-old');
+    await loadApiKey();
+
+    await saveApiKey('sk-or-v1-new');
+    expect(await loadApiKey()).toBe('sk-or-v1-new');
+
+    await removeApiKey();
+    expect(await loadApiKey()).toBeNull();
+  });
+
   it('forgets the key when removed', async () => {
     await saveApiKey('sk-or-v1-abc');
 

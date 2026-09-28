@@ -1,5 +1,3 @@
-export const TRAVEL_BUNDLES_URL = 'https://ik.imagekit.io/a16xyz/crew/travel-bundles.json';
-
 /** The first message waits at most this long for the destination list before sending. */
 export const DESTINATIONS_WAIT_MS = 3000;
 

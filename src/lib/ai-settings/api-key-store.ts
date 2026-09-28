@@ -13,21 +13,21 @@ type ApiKeyState = {
 
 const useApiKeyStore = create<ApiKeyState>()(() => ({ loaded: !persistent, apiKey: null }));
 
-let loading: Promise<string | null> | null = null;
+let loading: Promise<void> | null = null;
 
-/** Reads the saved key from the Keychain/Keystore once; later calls reuse the result. */
+/**
+ * Reads the saved key from the Keychain/Keystore once, then resolves to the current key, so a
+ * key saved or removed after the first read is what callers get.
+ */
 export function loadApiKey() {
-  if (!persistent) return Promise.resolve(useApiKeyStore.getState().apiKey);
+  if (!persistent) return Promise.resolve(getApiKey());
   loading ??= SecureStore.getItemAsync(API_KEY_STORAGE_KEY)
     .catch(() => null)
     .then((apiKey) => {
       // A key saved while the read was in flight wins over the older stored value.
-      const current = useApiKeyStore.getState();
-      const next = current.loaded ? current.apiKey : apiKey;
-      useApiKeyStore.setState({ loaded: true, apiKey: next });
-      return next;
+      if (!useApiKeyStore.getState().loaded) useApiKeyStore.setState({ loaded: true, apiKey });
     });
-  return loading;
+  return loading.then(getApiKey);
 }
 
 export async function saveApiKey(apiKey: string) {

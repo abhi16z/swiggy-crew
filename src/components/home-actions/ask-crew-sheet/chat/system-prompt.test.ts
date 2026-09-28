@@ -1,36 +1,36 @@
-import { fetch } from 'expo/fetch';
+import { FETCH_TIMEOUT_MS } from '@/components/discover-feed/constants';
+import { useTripsStore } from '@/components/discover-feed/store';
+import { jsonResponse, makeTrips } from '@/components/discover-feed/test-data';
 
 import { DESTINATIONS_WAIT_MS } from './constants';
 import { loadDestinations, resetDestinationsCache, toDestinationList } from './destinations';
 import { buildSystemPrompt, composeSystemPrompt } from './system-prompt';
 
-jest.mock('expo/fetch', () => ({ fetch: jest.fn() }));
+const realFetch = globalThis.fetch;
+const mockFetch = jest.fn<Promise<Response>, [string, RequestInit?]>();
 
-const mockFetch = jest.mocked(fetch);
-
-const BUNDLES = [
-  { id: 'serengeti-1', destination: 'Serengeti', country: 'Tanzania' },
-  { id: 'bodh-gaya-2', destination: 'Bodh Gaya', country: 'India' },
-  { id: 'serengeti-9', destination: 'Serengeti', country: 'Tanzania' },
-  { id: 'broken', destination: 42 },
+const [serengeti, bodhGaya, serengetiAgain, blank] = makeTrips(4);
+const TRIPS = [
+  { ...serengeti, destination: 'Serengeti', country: 'Tanzania' },
+  { ...bodhGaya, destination: 'Bodh Gaya', country: 'India' },
+  { ...serengetiAgain, destination: ' Serengeti ', country: 'Tanzania' },
+  { ...blank, destination: '  ' },
 ];
 
-function bundlesResponse() {
-  return { ok: true, status: 200, json: async () => BUNDLES } as never;
-}
-
 beforeEach(() => {
-  mockFetch.mockReset();
+  globalThis.fetch = mockFetch as typeof fetch;
+  useTripsStore.setState(useTripsStore.getInitialState());
   resetDestinationsCache();
 });
 
-describe('toDestinationList', () => {
-  it('lists each destination once with its country, in feed order, skipping bad rows', () => {
-    expect(toDestinationList(BUNDLES)).toEqual(['Serengeti (Tanzania)', 'Bodh Gaya (India)']);
-  });
+afterEach(() => {
+  globalThis.fetch = realFetch;
+  mockFetch.mockReset();
+});
 
-  it('returns nothing for a payload that is not a list', () => {
-    expect(toDestinationList({ items: BUNDLES })).toEqual([]);
+describe('toDestinationList', () => {
+  it('lists each destination once with its country, in feed order, skipping blank names', () => {
+    expect(toDestinationList(TRIPS)).toEqual(['Serengeti (Tanzania)', 'Bodh Gaya (India)']);
   });
 });
 
@@ -49,18 +49,29 @@ describe('composeSystemPrompt', () => {
 });
 
 describe('loadDestinations', () => {
-  it('downloads the feed once per session', async () => {
-    mockFetch.mockResolvedValue(bundlesResponse());
+  it('reuses the trips the feed already loaded, without downloading them again', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(TRIPS));
+    await useTripsStore.getState().loadTrips();
 
-    await loadDestinations();
-    await loadDestinations();
+    expect(await loadDestinations()).toEqual(['Serengeti (Tanzania)', 'Bodh Gaya (India)']);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
 
+  it('shares the feed request that is still in flight', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(TRIPS));
+
+    const [, destinations] = await Promise.all([
+      useTripsStore.getState().loadTrips(),
+      loadDestinations(),
+    ]);
+
+    expect(destinations).toHaveLength(2);
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to an empty list and retries later when the download fails', async () => {
     mockFetch.mockRejectedValueOnce(new TypeError('Network request failed'));
-    mockFetch.mockResolvedValueOnce(bundlesResponse());
+    mockFetch.mockResolvedValueOnce(jsonResponse(TRIPS));
 
     expect(await loadDestinations()).toEqual([]);
     expect(await loadDestinations()).toHaveLength(2);
@@ -74,11 +85,19 @@ describe('buildSystemPrompt', () => {
 
   it('does not hold up the first message when the feed is slow', async () => {
     jest.useFakeTimers();
-    mockFetch.mockReturnValue(new Promise<never>(() => {}));
+    // Settles only through the feed's own timeout, so the prompt must not wait for it.
+    mockFetch.mockImplementationOnce(
+      (_url, init) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new Error('Aborted')));
+        }),
+    );
 
     const prompt = buildSystemPrompt();
     await jest.advanceTimersByTimeAsync(DESTINATIONS_WAIT_MS);
 
     expect(await prompt).not.toContain('Destinations currently offered');
+    // Let the feed request time out, so no load is left in flight for later tests.
+    await jest.advanceTimersByTimeAsync(FETCH_TIMEOUT_MS);
   });
 });

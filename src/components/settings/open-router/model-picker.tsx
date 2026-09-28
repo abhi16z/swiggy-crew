@@ -1,18 +1,24 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
   Pressable,
   Text,
   TextInput,
+  useColorScheme,
   View,
   type ListRenderItemInfo,
 } from 'react-native';
 
-import { matchesQuery, type OpenRouterModel } from '@/lib/open-router';
+import { ICON_COLORS } from '@/constants/colors';
+import {
+  describeError,
+  filterModels,
+  loadChatModels,
+  type OpenRouterModel,
+} from '@/lib/open-router';
 
 import { MODEL_ROW_HEIGHT, ModelRow } from './model-row';
-import { useChatModels } from './use-chat-models';
 
 type ModelPickerProps = {
   selectedId: string;
@@ -29,13 +35,31 @@ function getItemLayout(_data: ArrayLike<OpenRouterModel> | null | undefined, ind
 
 /** Searchable list of every OpenRouter model that can chat in text. */
 export function ModelPicker({ selectedId, onSelect }: ModelPickerProps) {
-  const { models, error, retry } = useChatModels();
+  const placeholderColor = ICON_COLORS[useColorScheme() === 'dark' ? 'dark' : 'light'].muted;
+  const [models, setModels] = useState<OpenRouterModel[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [query, setQuery] = useState('');
+  // Typing stays responsive; the list filters once the keystrokes settle.
+  const deferredQuery = useDeferredValue(query);
 
-  const visible = useMemo(
-    () => (models ?? []).filter((model) => matchesQuery(model, query)),
-    [models, query],
-  );
+  // The catalog is cached for the app session; Retry bumps `attempt` to load it again.
+  useEffect(() => {
+    let active = true;
+    loadChatModels().then(
+      (list) => {
+        if (active) setModels(list);
+      },
+      (reason: unknown) => {
+        if (active) setError(describeError(reason));
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [attempt]);
+
+  const visible = useMemo(() => filterModels(models ?? [], deferredQuery), [models, deferredQuery]);
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<OpenRouterModel>) => (
@@ -47,11 +71,17 @@ export function ModelPicker({ selectedId, onSelect }: ModelPickerProps) {
   if (error) {
     return (
       <View className="mt-3 gap-2">
-        <Text className="text-sm text-red-600 dark:text-red-400">{error}</Text>
+        <Text accessibilityLiveRegion="polite" className="text-sm text-red-600 dark:text-red-400">
+          {error}
+        </Text>
         <Pressable
           accessibilityRole="button"
-          onPress={retry}
-          className="min-h-11 justify-center self-start"
+          accessibilityLabel="Retry loading models"
+          onPress={() => {
+            setError(null);
+            setAttempt((count) => count + 1);
+          }}
+          className="min-h-11 min-w-11 items-center justify-center self-start px-3"
         >
           <Text className="text-base font-medium text-blue-600 dark:text-blue-400">Retry</Text>
         </Pressable>
@@ -64,7 +94,7 @@ export function ModelPicker({ selectedId, onSelect }: ModelPickerProps) {
       <TextInput
         accessibilityLabel="Search models"
         placeholder="Search models"
-        placeholderTextColor="#8e8e93"
+        placeholderTextColor={placeholderColor}
         value={query}
         onChangeText={setQuery}
         autoCapitalize="none"
@@ -73,7 +103,7 @@ export function ModelPicker({ selectedId, onSelect }: ModelPickerProps) {
         className="min-h-11 rounded-xl bg-neutral-100 px-4 text-base text-black dark:bg-neutral-900 dark:text-white"
       />
       {models ? (
-        <View className="mt-2 flex-1">
+        <View accessibilityRole="radiogroup" accessibilityLabel="Models" className="mt-2 flex-1">
           <FlatList
             data={visible}
             keyExtractor={keyOf}
@@ -85,7 +115,7 @@ export function ModelPicker({ selectedId, onSelect }: ModelPickerProps) {
             keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
               <Text className="py-6 text-center text-sm text-neutral-600 dark:text-neutral-400">
-                No models match “{query.trim()}”.
+                No models match “{deferredQuery.trim()}”.
               </Text>
             }
           />

@@ -1,6 +1,7 @@
 import { act, render, screen, userEvent, within } from '@testing-library/react-native';
 
-import { useTripsStore, type AppliedFilters } from '@/components/discover-feed/store';
+import { useTripsStore } from '@/components/discover-feed/store';
+import type { AppliedFilters } from '@/components/discover-feed/types';
 
 import { HomeActions, HomeSheets } from '.';
 

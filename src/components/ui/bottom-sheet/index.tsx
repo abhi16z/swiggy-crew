@@ -34,7 +34,7 @@ import {
   PROJECT_SECONDS,
   REDUCE_MOTION_MS,
 } from './constants';
-import { BottomSheetContext, useBottomSheetContextValue } from './context';
+import { BottomSheetContext } from './context';
 import type { BottomSheetProps, BottomSheetRef, BottomSheetSnap } from './types';
 import {
   closedOffset,
@@ -167,7 +167,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function
     ],
   );
 
-  const context = useBottomSheetContextValue(translateY, halfY, peekInset);
+  const context = useMemo(() => ({ translateY, halfY, peekInset }), [translateY, halfY, peekInset]);
 
   const sheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.get() }],

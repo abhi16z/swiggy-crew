@@ -1,4 +1,4 @@
-import type { TripFilter, TripSort } from '@/components/discover-feed/store';
+import type { TripFilter, TripSort } from '@/components/discover-feed/types';
 import { KIND_BADGES, type IoniconName } from '@/components/trip-card/constants';
 
 export type TripFilterOption = { value: TripFilter; label: string; icon: IoniconName };
@@ -16,6 +16,3 @@ export const SORT_OPTIONS: { value: TripSort; label: string }[] = [
   { value: 'price_low', label: 'Price: low to high' },
   { value: 'top_rated', label: 'Top rated' },
 ];
-
-// BottomSheet's handle row (`min-h-11`), which sits above the body.
-export const SHEET_HANDLE_HEIGHT = 44;

@@ -1,11 +1,16 @@
 import { render, screen, userEvent } from '@testing-library/react-native';
-import { Dimensions } from 'react-native';
 
 import { useTripsStore } from '@/components/discover-feed/store';
 import { makeTrips } from '@/components/discover-feed/test-data';
 
-import { SHEET_HANDLE_HEIGHT } from './constants';
 import FiltersSheetBody from './filters-sheet-body';
+
+// The body is rendered on its own here; the sheet reports how much of it is off screen at half.
+const MOCK_PEEK_INSET = 320;
+jest.mock('@/components/ui/bottom-sheet', () => ({
+  ...jest.requireActual<object>('@/components/ui/bottom-sheet'),
+  useBottomSheetPeekInset: () => MOCK_PEEK_INSET,
+}));
 
 const onSnapTo = jest.fn();
 
@@ -60,7 +65,8 @@ describe('FiltersSheetBody', () => {
     expect(screen.queryByRole('radio', { name: 'Recommended' })).not.toBeOnTheScreen();
   });
 
-  it('applies the chosen type and sort together and closes the sheet on "Show"', async () => {
+  // The sheet applies them once its close animation ends (see filters-sheet.test.tsx).
+  it('queues the chosen type and sort together and closes the sheet on "Show"', async () => {
     const user = userEvent.setup();
     await renderBody();
 
@@ -72,7 +78,11 @@ describe('FiltersSheetBody', () => {
 
     await user.press(screen.getByRole('button', { name: 'Show 3 trips' }));
 
-    expect(useTripsStore.getState()).toMatchObject({ tripFilter: 'villa', tripSort: 'price_low' });
+    expect(useTripsStore.getState()).toMatchObject({
+      tripFilter: 'all',
+      tripSort: 'recommended',
+      pendingFilters: { tripFilter: 'villa', tripSort: 'price_low' },
+    });
     expect(onSnapTo).toHaveBeenCalledWith('closed');
   });
 
@@ -109,19 +119,28 @@ describe('FiltersSheetBody', () => {
     await user.press(radio(/^Villa, 0 trips/));
     await user.press(screen.getByRole('button', { name: 'Show 0 trips' }));
 
-    expect(useTripsStore.getState().tripFilter).toBe('villa');
+    expect(useTripsStore.getState().pendingFilters).toMatchObject({ tripFilter: 'villa' });
+    expect(onSnapTo).toHaveBeenCalledWith('closed');
+  });
+
+  // Nothing changes, so the feed must not show its loader.
+  it('queues nothing when "Show" keeps the applied filters', async () => {
+    const user = userEvent.setup();
+    await renderBody();
+
+    await user.press(screen.getByRole('button', { name: 'Show 6 trips' }));
+
+    expect(useTripsStore.getState().pendingFilters).toBeNull();
     expect(onSnapTo).toHaveBeenCalledWith('closed');
   });
 
   // At half height the sheet's lower half is off screen; the body must fit in the upper part
   // so an expanded Sort by scrolls there and the buttons stay visible.
   it('fits the part of the sheet on screen at half height, and the whole sheet at full', async () => {
-    // Test insets are zero, so the visible part is half the window.
-    const visibleAtHalf = Dimensions.get('window').height / 2;
     await renderBody();
-    expect(screen.root).toHaveStyle({ maxHeight: visibleAtHalf - SHEET_HANDLE_HEIGHT });
+    expect(screen.root).toHaveStyle({ marginBottom: MOCK_PEEK_INSET });
 
     await screen.rerender(<FiltersSheetBody onSnapTo={onSnapTo} fullHeight />);
-    expect(screen.root).not.toHaveStyle({ maxHeight: visibleAtHalf - SHEET_HANDLE_HEIGHT });
+    expect(screen.root).toHaveStyle({ marginBottom: 0 });
   });
 });

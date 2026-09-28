@@ -4,7 +4,7 @@ import { createRef } from 'react';
 import type { BottomSheetRef } from '@/components/ui/bottom-sheet';
 import { removeApiKey, saveApiKey } from '@/lib/ai-settings';
 import { resetApiKeyStore } from '@/lib/ai-settings/api-key-store';
-import { streamChat } from '@/lib/open-router';
+import { OpenRouterError, streamChat } from '@/lib/open-router';
 
 import { AskCrewSheet } from '.';
 import { FLUSH_INTERVAL_MS } from './chat/delta-buffer';
@@ -153,6 +153,72 @@ describe('Ask Crew chat', () => {
 
     expect(screen.getByText('Go in July.')).toBeOnTheScreen();
     expect(screen.getByLabelText('Message Crew')).toBeOnTheScreen();
+  });
+
+  it('retries a failed reply from its Retry button, without repeating the question', async () => {
+    const user = userEvent.setup();
+    jest
+      .mocked(streamChat)
+      .mockRejectedValueOnce(new OpenRouterError('credits', 'Insufficient credits', 402));
+    await openSheet();
+    await send('Hi');
+    expect(screen.getByText('Your OpenRouter account is out of credits.')).toBeOnTheScreen();
+
+    const retry = controlStream();
+    await user.press(screen.getByRole('button', { name: 'Retry this reply' }));
+    await tick();
+
+    expect(retry.options?.messages.at(-1)).toEqual({ role: 'user', content: 'Hi' });
+    expect(screen.getAllByText('Hi')).toHaveLength(1);
+    expect(screen.getByLabelText('Crew is thinking')).toBeOnTheScreen();
+    expect(screen.queryByText('Your OpenRouter account is out of credits.')).not.toBeOnTheScreen();
+  });
+
+  // Retrying an older failure would move its question to the end and reorder the chat.
+  it('offers Retry only while the failed reply is the last message', async () => {
+    jest.mocked(streamChat).mockRejectedValueOnce(new OpenRouterError('credits', 'No', 402));
+    await openSheet();
+    await send('Hi');
+    expect(screen.getByRole('button', { name: 'Retry this reply' })).toBeOnTheScreen();
+
+    const next = controlStream();
+    await send('Anyone there?');
+    await act(async () => {
+      next.options?.onDelta('Yes!');
+      next.finish();
+    });
+    await tick();
+
+    expect(screen.getByText('Your OpenRouter account is out of credits.')).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'Retry this reply' })).not.toBeOnTheScreen();
+  });
+
+  it('sends a suggestion when it is tapped', async () => {
+    const user = userEvent.setup();
+    const stream = controlStream();
+    await openSheet();
+
+    await user.press(screen.getByRole('button', { name: 'What should I pack for a safari?' }));
+    await tick();
+
+    expect(stream.options?.messages.at(-1)).toEqual({
+      role: 'user',
+      content: 'What should I pack for a safari?',
+    });
+    expect(screen.getByText('What should I pack for a safari?')).toBeOnTheScreen();
+  });
+
+  it('keeps an unsent draft when the sheet is closed and reopened', async () => {
+    const user = userEvent.setup();
+    const ref = await openSheet();
+    await user.type(screen.getByLabelText('Message Crew'), 'Half a thought');
+
+    await act(async () => ref.current?.snapTo('closed'));
+    await tick(1000);
+    expect(screen.queryByLabelText('Message Crew')).not.toBeOnTheScreen();
+    await act(async () => ref.current?.snapTo('half'));
+
+    expect(await screen.findByLabelText('Message Crew')).toHaveDisplayValue('Half a thought');
   });
 
   it('points to Settings when no OpenRouter key is saved', async () => {

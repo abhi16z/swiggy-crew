@@ -164,4 +164,21 @@ describe('DiscoverFeed', () => {
     expect(screen.getByText('Trip 1')).toBeOnTheScreen();
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
+
+  // Filters wait for the filters sheet to finish closing; the header says the list is updating.
+  it('shows the loader instead of the count while new filters wait to be applied', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(3, ['villa', 'experience'])));
+    await render(<DiscoverFeed />);
+    await screen.findByText('3 trips');
+
+    await act(async () =>
+      useTripsStore.getState().queueFilters({ tripFilter: 'villa', tripSort: 'recommended' }),
+    );
+    expect(screen.getByText('Loading')).toBeOnTheScreen();
+    expect(screen.queryByText('3 trips')).not.toBeOnTheScreen();
+
+    await act(async () => useTripsStore.getState().applyPendingFilters());
+    expect(screen.getByText('2 trips')).toBeOnTheScreen();
+    expect(screen.queryByText('Loading')).not.toBeOnTheScreen();
+  });
 });

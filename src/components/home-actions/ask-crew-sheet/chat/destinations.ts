@@ -1,17 +1,13 @@
-import { fetch } from 'expo/fetch';
-
-import { TRAVEL_BUNDLES_URL } from './constants';
-
-type Bundle = { destination?: unknown; country?: unknown };
+import { useTripsStore } from '@/components/discover-feed/store';
+import type { TripBundle } from '@/components/trip-card';
 
 /** Unique "Destination (Country)" labels, in feed order. */
-export function toDestinationList(bundles: unknown): string[] {
-  if (!Array.isArray(bundles)) return [];
+export function toDestinationList(trips: TripBundle[]): string[] {
   const labels = new Set<string>();
-  for (const bundle of bundles as Bundle[]) {
-    if (typeof bundle?.destination !== 'string' || bundle.destination.trim() === '') continue;
-    const country = typeof bundle.country === 'string' ? bundle.country.trim() : '';
-    const name = bundle.destination.trim();
+  for (const trip of trips) {
+    const name = trip.destination.trim();
+    if (name === '') continue;
+    const country = trip.country.trim();
     labels.add(country ? `${name} (${country})` : name);
   }
   return [...labels];
@@ -20,18 +16,17 @@ export function toDestinationList(bundles: unknown): string[] {
 let cached: Promise<string[]> | null = null;
 
 /**
- * Destinations offered in the feed, for the assistant's system prompt. Fetched once per app
- * session; a failed load resolves to an empty list (the chat still works) and is retried on
- * the next call.
+ * Destinations offered in the feed, for the assistant's system prompt. Reuses the feed's
+ * trips (loading them if the feed has not); a failed load resolves to an empty list (the chat
+ * still works) and is retried on the next call.
  */
 export function loadDestinations() {
-  cached ??= fetch(TRAVEL_BUNDLES_URL)
-    .then((response) => {
-      if (!response.ok) throw new Error(`Status ${response.status}`);
-      return response.json();
-    })
-    .then(toDestinationList)
-    .catch(() => {
+  cached ??= useTripsStore
+    .getState()
+    .loadTrips()
+    .then(() => {
+      const { status, trips } = useTripsStore.getState();
+      if (status === 'success') return toDestinationList(trips);
       cached = null;
       return [];
     });

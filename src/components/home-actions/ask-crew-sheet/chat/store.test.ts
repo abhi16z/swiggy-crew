@@ -177,6 +177,59 @@ describe('chat store', () => {
     ]);
   });
 
+  /** Sends `question` and fails its reply, leaving it as the open chat's last message. */
+  async function failedExchange(question: string) {
+    const failing = controlStream();
+    const sent = sendMessage(question);
+    await flushAsync();
+    failing.fail(new OpenRouterError('provider', 'Overloaded', 503));
+    await sent;
+  }
+
+  // Regression: the failed pair was removed before the key was read, so a missing key lost it.
+  it('keeps the failed question and reply when a retry cannot send', async () => {
+    await failedExchange('Hi');
+    await removeApiKey();
+
+    retryReply(messages()[1].id);
+    await flushAsync();
+
+    expect(messages()).toMatchObject([
+      { role: 'user', content: 'Hi' },
+      { role: 'assistant', status: 'error' },
+    ]);
+  });
+
+  // Regression: the retry used to land in whichever chat was open once the key had loaded.
+  it('retries into the failed reply’s own chat even if another chat is opened meanwhile', async () => {
+    await failedExchange('Serengeti?');
+    const first = activeChat()!;
+
+    controlStream();
+    retryReply(first.messages[1].id);
+    startNewChat();
+    await flushAsync();
+
+    expect(messages()).toEqual([]);
+    const retried = useChatStore.getState().chats.find((chat) => chat.id === first.id);
+    expect(retried?.messages).toMatchObject([
+      { role: 'user', content: 'Serengeti?' },
+      { role: 'assistant', status: 'streaming' },
+    ]);
+  });
+
+  it('only retries the chat’s last message', async () => {
+    await failedExchange('Hi');
+    const failedId = messages()[1].id;
+    await exchange('Again?', 'Yes.');
+
+    retryReply(failedId);
+    await flushAsync();
+
+    expect(streamChat).toHaveBeenCalledTimes(2);
+    expect(messages().map((message) => message.content)).toEqual(['Hi', '', 'Again?', 'Yes.']);
+  });
+
   it('does nothing without a saved key', async () => {
     await removeApiKey();
 

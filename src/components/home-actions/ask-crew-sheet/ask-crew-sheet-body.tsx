@@ -9,7 +9,7 @@ import {
 import { loadApiKey, useApiKey, useApiKeyLoaded } from '@/lib/ai-settings';
 
 import { loadDestinations } from './chat/destinations';
-import { openChat, startNewChat, useActiveMessages, useChatStore } from './chat/store';
+import { openChat, startNewChat, useActiveHasMessages, useChatStore } from './chat/store';
 import { ChatHeader } from './components/chat-header';
 import { ChatList } from './components/chat-list';
 import { Composer } from './components/composer';
@@ -28,7 +28,7 @@ export default function AskCrewSheetBody({ snap, onSnapTo }: AskCrewSheetBodyPro
   const apiKey = useApiKey();
   const keyLoaded = useApiKeyLoaded();
   const activeChatId = useChatStore((state) => state.activeChatId);
-  const hasMessages = useActiveMessages().length > 0;
+  const hasMessages = useActiveHasMessages();
   const peekInset = useBottomSheetPeekInset();
   const [showingChats, setShowingChats] = useState(false);
 
@@ -67,7 +67,11 @@ export default function AskCrewSheetBody({ snap, onSnapTo }: AskCrewSheetBodyPro
       />
       {/* At half height the footer is lifted over the body's hidden bottom part; end the
           content above it. Changes once per snap, never during a drag. */}
-      <View className="flex-1" style={{ marginBottom: snap === 'full' ? 0 : peekInset }}>
+      <View
+        testID="ask-crew-content"
+        className="flex-1"
+        style={{ marginBottom: snap === 'full' ? 0 : peekInset }}
+      >
         {content}
       </View>
       {showingChats ? null : (

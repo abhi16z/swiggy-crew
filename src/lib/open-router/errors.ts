@@ -33,10 +33,7 @@ export function networkError(cause: unknown) {
 }
 
 /** Builds an error from a non-2xx response, using the API's `{ error: { message } }` body. */
-export async function errorFromResponse(response: {
-  status: number;
-  text: () => Promise<string>;
-}) {
+export async function errorFromResponse(response: { status: number; text: () => Promise<string> }) {
   let message = `Request failed with status ${response.status}`;
   try {
     const body = JSON.parse(await response.text()) as { error?: { message?: string } };

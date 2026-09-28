@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -28,6 +29,8 @@ type TripDetailsProps = {
 export function TripDetails({ highlights }: TripDetailsProps) {
   const count = highlights.length;
   const activeIndex = useSharedValue(0);
+  // With reduced motion the active dot jumps to its place instead of sliding.
+  const dotMoveMs = useReducedMotion() ? 0 : DOT_MOVE_MS;
 
   const onScroll = useAnimatedScrollHandler((event) => {
     const maxOffsetX = event.contentSize.width - event.layoutMeasurement.width;
@@ -42,7 +45,7 @@ export function TripDetails({ highlights }: TripDetailsProps) {
 
   const activeDotStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: withTiming(activeIndex.value * DOT_SPACING, { duration: DOT_MOVE_MS }) },
+      { translateX: withTiming(activeIndex.value * DOT_SPACING, { duration: dotMoveMs }) },
     ],
   }));
 

@@ -1,6 +1,15 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
+import {
+  AccessibilityInfo,
+  ActivityIndicator,
+  Pressable,
+  Text,
+  TextInput,
+  useColorScheme,
+  View,
+} from 'react-native';
 
+import { ICON_COLORS } from '@/constants/colors';
 import { maskApiKey, removeApiKey, saveApiKey } from '@/lib/ai-settings';
 import { describeError, isOpenRouterError, verifyKey } from '@/lib/open-router';
 
@@ -22,6 +31,7 @@ function keyErrorMessage(error: unknown) {
 
 /** Shows the saved key (masked) or a field to enter one. A key is checked before it is saved. */
 export function ApiKeyField({ apiKey }: ApiKeyFieldProps) {
+  const placeholderColor = ICON_COLORS[useColorScheme() === 'dark' ? 'dark' : 'light'].muted;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const [checking, setChecking] = useState(false);
@@ -69,7 +79,10 @@ export function ApiKeyField({ apiKey }: ApiKeyFieldProps) {
       setDraft('');
       setEditing(false);
     } catch (reason) {
-      setError(keyErrorMessage(reason));
+      const message = keyErrorMessage(reason);
+      setError(message);
+      // The live region below covers Android; iOS needs the announcement.
+      AccessibilityInfo.announceForAccessibility(message);
     } finally {
       setChecking(false);
     }
@@ -81,7 +94,7 @@ export function ApiKeyField({ apiKey }: ApiKeyFieldProps) {
       <TextInput
         accessibilityLabel="OpenRouter key"
         placeholder="sk-or-v1-…"
-        placeholderTextColor="#8e8e93"
+        placeholderTextColor={placeholderColor}
         value={draft}
         onChangeText={setDraft}
         onSubmitEditing={() => void save()}
@@ -93,12 +106,16 @@ export function ApiKeyField({ apiKey }: ApiKeyFieldProps) {
         returnKeyType="done"
         className="min-h-11 rounded-xl bg-neutral-100 px-4 text-base text-black dark:bg-neutral-900 dark:text-white"
       />
-      {error ? <Text className="text-sm text-red-600 dark:text-red-400">{error}</Text> : null}
+      {error ? (
+        <Text accessibilityLiveRegion="polite" className="text-sm text-red-600 dark:text-red-400">
+          {error}
+        </Text>
+      ) : null}
       <View className="flex-row items-center gap-2">
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Save OpenRouter key"
-          accessibilityState={{ disabled: !canSave }}
+          accessibilityState={{ disabled: !canSave, busy: checking }}
           disabled={!canSave}
           onPress={() => void save()}
           className={`min-h-11 flex-row items-center justify-center gap-2 rounded-full bg-neutral-900 px-5 dark:bg-white ${canSave ? '' : 'opacity-40'}`}
@@ -122,9 +139,7 @@ export function ApiKeyField({ apiKey }: ApiKeyFieldProps) {
           </Pressable>
         ) : null}
       </View>
-      <Text className="text-xs text-neutral-600 dark:text-neutral-400">
-        {STORAGE_NOTE}
-      </Text>
+      <Text className="text-xs text-neutral-600 dark:text-neutral-400">{STORAGE_NOTE}</Text>
     </View>
   );
 }

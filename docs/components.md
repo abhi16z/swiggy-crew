@@ -34,7 +34,7 @@ This doc contains components and use cases
 ## RemoteImage
 
 - Use for every remote image. Built on `expo-image` (disk and memory cache, downscaled to the view size on Android).
-- `width` and `height` are required so the layout never waits on the image. Remote images are 16:9 and cropped to cover the box. Card hero sizes from the designs are in `src/components/ui/remote-image/constants.ts`.
+- `width` and `height` are required so the layout never waits on the image. Remote images are 16:9 and cropped to cover the box. Card hero sizes from the designs are in `src/components/trip-card/constants.ts`.
 - While loading: the item's `placeholderColor`, then `loaderUri` (a tiny remote copy in the same aspect ratio, e.g. ImageKit `?tr=w-45,h-25`) scaled up to fill the box. Without `loaderUri` it falls back to `src/assets/image-loading.png`. Both are drawn natively, so a successful load re-renders nothing.
 - `loaderUri` must be a remote http(s) URL: the `RemoteUri` type rejects other values, and in development a bundled image (`require(...)`, typed `any`) throws.
 - On failure: `src/assets/image-placeholder.png` centered on a neutral background, in the same box.

@@ -2,9 +2,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo } from 'react';
 import { Pressable, Text, useColorScheme, View } from 'react-native';
 
-import type { TripFilter } from '@/components/discover-feed/store';
+import type { TripFilter } from '@/components/discover-feed/types';
 import { formatTripCount } from '@/components/discover-feed/utils';
-import { ICON_COLORS } from '@/components/trip-card/constants';
+import { ICON_COLORS } from '@/constants/colors';
 
 import type { TripFilterOption } from './constants';
 

@@ -16,9 +16,9 @@ export const ModelRow = memo(function ModelRow({ model, selected, onSelect }: Mo
   const price = formatPrice(model);
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityRole="radio"
       accessibilityLabel={`${model.name}, ${price}`}
-      accessibilityState={{ selected }}
+      accessibilityState={{ checked: selected }}
       onPress={() => onSelect(model.id)}
       className="h-16 flex-row items-center gap-3 border-b border-neutral-200 dark:border-neutral-800"
     >

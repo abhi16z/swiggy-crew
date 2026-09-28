@@ -2,8 +2,8 @@ import { memo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { SKELETON_COUNT } from './constants';
-import type { FeedStatus } from './store';
 import { TripCardSkeleton } from './trip-card-skeleton';
+import type { FeedStatus } from './types';
 
 const SKELETON_KEYS = Array.from({ length: SKELETON_COUNT }, (_, index) => `skeleton-${index}`);
 

@@ -13,16 +13,14 @@ type ChatState = {
   chats: Chat[];
   /** The chat on screen; `null` is a new chat that is created by its first message. */
   activeChatId: string | null;
-  draft: string;
 };
 
-// Lives outside the sheet body, which unmounts on close: chats, the draft and replies that
-// are still streaming all survive closing and reopening the sheet. Kept in memory only, so a
-// fresh app launch starts with no chats.
+// Lives outside the sheet body, which unmounts on close: chats and replies that are still
+// streaming survive closing and reopening the sheet. Kept in memory only, so a fresh app
+// launch starts with no chats.
 export const useChatStore = create<ChatState>()(() => ({
   chats: [],
   activeChatId: null,
-  draft: '',
 }));
 
 const NO_MESSAGES: ChatMessage[] = [];
@@ -31,9 +29,17 @@ const NO_MESSAGES: ChatMessage[] = [];
 const controllers = new Map<string, AbortController>();
 let nextId = 0;
 
+// The composer's unsent text, kept across closing and reopening the sheet. Not store state:
+// nothing renders from it, and a store update per keystroke would rerun every chat selector.
+let draft = '';
+
 function createId(prefix: string) {
   nextId += 1;
   return `${prefix}${nextId}`;
+}
+
+function activeChatOf(state: ChatState) {
+  return state.chats.find((chat) => chat.id === state.activeChatId);
 }
 
 function findChat(chatId: string | null) {
@@ -76,47 +82,60 @@ export function toHistory(messages: ChatMessage[]): ChatMessageParam[] {
     .map(({ role, content }) => ({ role, content }));
 }
 
-/** Adds the question and an empty reply to the chat, creating it if new, and moves it first. */
-function addTurn(chatId: string | null, content: string, reply: ChatMessage) {
+/**
+ * Puts the question and an empty reply after `earlier` in the chat, creating and opening the
+ * chat if it is new, and moves it first in the list.
+ */
+function addTurn(
+  existing: Chat | undefined,
+  earlier: ChatMessage[],
+  content: string,
+  reply: ChatMessage,
+) {
   const question: ChatMessage = { id: createId('m'), role: 'user', content, status: 'done' };
-  const existing = findChat(chatId);
   const chat: Chat = existing
-    ? { ...existing, messages: [...existing.messages, question, reply] }
+    ? { ...existing, messages: [...earlier, question, reply] }
     : { id: createId('c'), title: content, messages: [question, reply] };
   useChatStore.setState((state) => ({
     chats: [chat, ...state.chats.filter((other) => other.id !== chat.id)],
-    activeChatId: chat.id,
+    // An existing chat is either already open, or being retried; a retry must not switch chats.
+    ...(existing ? null : { activeChatId: chat.id }),
   }));
   return chat.id;
 }
 
 /**
- * Sends a message in the open chat (starting it if it is new) and streams the reply into
- * that chat, even if the user switches chats meanwhile. Ignored while that chat is replying.
+ * Sends `content` into chat `chatId`, or into the open chat (starting it if new) when no id is
+ * given, and streams the reply into that chat even if the user switches chats meanwhile.
+ * `replacing` names messages the new turn takes the place of; they are removed only once it
+ * is added. Ignored while that chat is replying.
  */
-export async function sendMessage(text: string) {
-  const content = text.trim();
-  if (content === '' || isStreaming(findChat(useChatStore.getState().activeChatId))) return;
+async function send(content: string, chatId?: string, replacing: readonly string[] = []) {
+  const targetOf = () => findChat(chatId ?? useChatStore.getState().activeChatId);
+  if (content === '' || isStreaming(targetOf())) return;
   const apiKey = await loadApiKey();
   // Read again after the await: a second send may have started this chat's reply meanwhile.
-  const target = findChat(useChatStore.getState().activeChatId);
-  if (!apiKey || isStreaming(target)) return;
+  const target = targetOf();
+  if (!apiKey || isStreaming(target) || (chatId !== undefined && !target)) return;
 
-  const history = toHistory(target?.messages ?? NO_MESSAGES);
+  const earlier = (target?.messages ?? NO_MESSAGES).filter(
+    (message) => !replacing.includes(message.id),
+  );
+  const history = toHistory(earlier);
   const reply: ChatMessage = {
     id: createId('m'),
     role: 'assistant',
     content: '',
     status: 'streaming',
   };
-  const chatId = addTurn(target?.id ?? null, content, reply);
+  const id = addTurn(target, earlier, content, reply);
 
   const current = new AbortController();
-  controllers.set(chatId, current);
-  const buffer = createDeltaBuffer((delta) => appendToMessage(chatId, reply.id, delta));
+  controllers.set(id, current);
+  const buffer = createDeltaBuffer((delta) => appendToMessage(id, reply.id, delta));
   const finish = (status: ChatMessageStatus, error?: string) => {
     buffer.flush();
-    updateMessage(chatId, reply.id, { status, error });
+    updateMessage(id, reply.id, { status, error });
   };
 
   try {
@@ -133,8 +152,13 @@ export async function sendMessage(text: string) {
     if (current.signal.aborted) finish('stopped');
     else finish('error', describeError(error));
   } finally {
-    if (controllers.get(chatId) === current) controllers.delete(chatId);
+    if (controllers.get(id) === current) controllers.delete(id);
   }
+}
+
+/** Sends a message in the open chat, starting it if it is new. */
+export function sendMessage(text: string) {
+  return send(text.trim());
 }
 
 /** Stops the open chat's reply; the text so far stays in the chat. */
@@ -143,18 +167,19 @@ export function stopReply() {
   if (activeChatId) controllers.get(activeChatId)?.abort();
 }
 
-/** Removes a failed reply and the message that prompted it, then sends that message again. */
+/**
+ * Sends the message behind the open chat's failed reply again. Only the chat's last message
+ * can be retried, so a retry never reorders the conversation. The failed pair is replaced only
+ * once the new turn starts, and the reply goes to that chat even if another one is opened.
+ */
 export function retryReply(replyId: string) {
   const chat = findChat(useChatStore.getState().activeChatId);
-  if (!chat || isStreaming(chat)) return;
-  const index = chat.messages.findIndex((message) => message.id === replyId);
-  const prompt = chat.messages[index - 1];
-  if (index < 1 || prompt.role !== 'user') return;
-  updateChat(chat.id, (current) => ({
-    ...current,
-    messages: current.messages.filter((_, i) => i !== index && i !== index - 1),
-  }));
-  void sendMessage(prompt.content);
+  const reply = chat?.messages[chat.messages.length - 1];
+  const prompt = chat?.messages[chat.messages.length - 2];
+  if (!chat || reply?.id !== replyId || reply.status !== 'error' || prompt?.role !== 'user') {
+    return;
+  }
+  void send(prompt.content, chat.id, [prompt.id, reply.id]);
 }
 
 /** Opens an empty chat. Other chats, including any still replying, stay in the list. */
@@ -166,29 +191,31 @@ export function openChat(chatId: string) {
   if (findChat(chatId)) useChatStore.setState({ activeChatId: chatId });
 }
 
-export function setDraft(draft: string) {
-  useChatStore.setState({ draft });
+export function setDraft(value: string) {
+  draft = value;
 }
 
 export function getDraft() {
-  return useChatStore.getState().draft;
+  return draft;
 }
 
 export function useActiveMessages() {
-  return useChatStore(
-    (state) => state.chats.find((chat) => chat.id === state.activeChatId)?.messages ?? NO_MESSAGES,
-  );
+  return useChatStore((state) => activeChatOf(state)?.messages ?? NO_MESSAGES);
+}
+
+/** A boolean, so callers do not re-render on every streamed update of the messages. */
+export function useActiveHasMessages() {
+  return useChatStore((state) => (activeChatOf(state)?.messages.length ?? 0) > 0);
 }
 
 export function useActiveChatStreaming() {
-  return useChatStore((state) =>
-    isStreaming(state.chats.find((chat) => chat.id === state.activeChatId)),
-  );
+  return useChatStore((state) => isStreaming(activeChatOf(state)));
 }
 
-/** Test helper: stops every reply and forgets all chats. */
+/** Test helper: stops every reply and forgets all chats and the draft. */
 export function resetChats() {
   for (const controller of controllers.values()) controller.abort();
   controllers.clear();
-  useChatStore.setState({ chats: [], activeChatId: null, draft: '' });
+  draft = '';
+  useChatStore.setState({ chats: [], activeChatId: null });
 }

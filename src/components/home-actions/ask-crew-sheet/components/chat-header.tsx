@@ -2,9 +2,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
 import { Pressable, Text, useColorScheme, View } from 'react-native';
 
-import { ICON_COLORS } from '@/components/trip-card/constants';
+import { ICON_COLORS } from '@/constants/colors';
 
-import { useActiveMessages, useChatStore } from '../chat/store';
+import { useActiveHasMessages, useChatStore } from '../chat/store';
 
 type ChatHeaderProps = {
   showingChats: boolean;
@@ -19,7 +19,7 @@ type IconName = ComponentProps<typeof Ionicons>['name'];
 export function ChatHeader({ showingChats, onToggleChats, onNewChat, onClose }: ChatHeaderProps) {
   const colors = ICON_COLORS[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const hasChats = useChatStore((state) => state.chats.length > 0);
-  const hasMessages = useActiveMessages().length > 0;
+  const hasMessages = useActiveHasMessages();
 
   const button = (icon: IconName, label: string, onPress: () => void) => (
     <Pressable

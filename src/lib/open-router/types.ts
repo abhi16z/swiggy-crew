@@ -12,16 +12,12 @@ export type OpenRouterModel = {
   /** USD per token; negative means the price depends on the model routed to. */
   promptPrice: number;
   completionPrice: number;
+  /** Lowercased name and id, computed once for sorting and search. */
+  searchKey: string;
 };
 
 export type OpenRouterErrorKind =
-  | 'auth'
-  | 'credits'
-  | 'rate-limit'
-  | 'request'
-  | 'provider'
-  | 'network'
-  | 'unknown';
+  'auth' | 'credits' | 'rate-limit' | 'request' | 'provider' | 'network' | 'unknown';
 
 /** Shape of `GET /models` entries that the app reads. */
 export type RawOpenRouterModel = {

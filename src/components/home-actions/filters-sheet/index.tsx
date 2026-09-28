@@ -1,3 +1,4 @@
+import { useTripsStore } from '@/components/discover-feed/store';
 import {
   BottomSheet,
   type BottomSheetRef,
@@ -33,14 +34,21 @@ export const FiltersSheet = forwardRef<BottomSheetRef>(function FiltersSheet(_pr
   const [fullHeight, setFullHeight] = useState(false);
 
   const handleSnapChange = useCallback((snap: BottomSheetSnap) => {
-    if (snap !== 'closed') setContentMounted(true);
+    if (snap !== 'closed') {
+      setContentMounted(true);
+      // Pulled back up before it finished closing: the user is still choosing.
+      useTripsStore.getState().queueFilters(null);
+    }
     setFullHeight(snap === 'full');
   }, []);
 
-  // A new key after each close remounts the body, dropping a choice that was not applied.
-  // It runs after the close animation, so the remount never costs a visible frame.
+  // Runs after the close animation, so neither the feed rebuilding with the chosen filters
+  // nor the body remounting ever costs a frame of it. The new key drops unapplied choices.
   const [bodyKey, setBodyKey] = useState(0);
-  const handleClosed = useCallback(() => setBodyKey((key) => key + 1), []);
+  const handleClosed = useCallback(() => {
+    useTripsStore.getState().applyPendingFilters();
+    setBodyKey((key) => key + 1);
+  }, []);
 
   return (
     <BottomSheet

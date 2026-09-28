@@ -17,16 +17,16 @@ Designs are in `local/designs`. The designs are a guideline; where they conflict
 
 Changing any of these affects every feature. Discuss the change first, and keep the tests passing.
 
-| File                                               | What it does                                                                                                                                                                                                                                |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/app/_layout.tsx`                              | Root. Paint order is `AppTabs` → `HomeSheets` → `PerformancePanel`: sheets cover the tab bar, and the panel covers the sheets.                                                                                                              |
-| `src/components/app-tabs.tsx` / `app-tabs.web.tsx` | Tabs: Home, Showcase, About, Settings (native tabs; web uses `expo-router/ui`).                                                                                                                                                             |
-| `src/components/ui/bottom-sheet/*`                 | The sheet used for all modals. Snap stops are `'half' \| 'full' \| 'closed'`. `onSnapChange('closed')` fires when closing **starts**; `onClosed` fires once the close animation **finishes**. The Android back button closes an open sheet. |
-| `src/components/ui/bottom-sheet/footer.tsx`, `context.ts` | `BottomSheetFooter` keeps content on the visible bottom edge at every height; `useBottomSheetPeekInset()` gives the body height hidden below the screen at half. Added for Ask Crew.                                                            |
-| `src/components/ui/tab-bar-safe-area/*`            | `TabBarSafeArea`: wrap floating content in a tab screen with it. On iOS it pads by the tab bar inset. On Android it's a plain overlay, because the native safe area there pushed the buttons up after a tab switch (regression-tested).     |
-| `src/app/_layout.tsx` (again)                      | Also wraps the app in `KeyboardProvider` (`react-native-keyboard-controller`).                                                                                                                                                                                             |
-| `src/lib/open-router/*`, `src/lib/ai-settings/*`   | OpenRouter client (streaming chat, models, key check) and the saved key/model. The key is in SecureStore; the model id in AsyncStorage (`ask-crew-model`).                                                                                                                  |
-| `docs/components.md`                               | Conventions for the components above.                                                                                                                                                                                                       |
+| File                                                      | What it does                                                                                                                                                                                                                                |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/_layout.tsx`                                     | Root. Paint order is `AppTabs` → `HomeSheets` → `PerformancePanel`: sheets cover the tab bar, and the panel covers the sheets.                                                                                                              |
+| `src/components/app-tabs.tsx` / `app-tabs.web.tsx`        | Tabs: Home, Showcase, About, Settings (native tabs; web uses `expo-router/ui`).                                                                                                                                                             |
+| `src/components/ui/bottom-sheet/*`                        | The sheet used for all modals. Snap stops are `'half' \| 'full' \| 'closed'`. `onSnapChange('closed')` fires when closing **starts**; `onClosed` fires once the close animation **finishes**. The Android back button closes an open sheet. |
+| `src/components/ui/bottom-sheet/footer.tsx`, `context.ts` | `BottomSheetFooter` keeps content on the visible bottom edge at every height; `useBottomSheetPeekInset()` gives the body height hidden below the screen at half. Added for Ask Crew.                                                        |
+| `src/components/ui/tab-bar-safe-area/*`                   | `TabBarSafeArea`: wrap floating content in a tab screen with it. On iOS it pads by the tab bar inset. On Android it's a plain overlay, because the native safe area there pushed the buttons up after a tab switch (regression-tested).     |
+| `src/app/_layout.tsx` (again)                             | Also wraps the app in `KeyboardProvider` (`react-native-keyboard-controller`).                                                                                                                                                              |
+| `src/lib/open-router/*`, `src/lib/ai-settings/*`          | OpenRouter client (streaming chat, models, key check) and the saved key/model. The key is in SecureStore; the model id in AsyncStorage (`ask-crew-model`).                                                                                  |
+| `docs/components.md`                                      | Conventions for the components above.                                                                                                                                                                                                       |
 
 `src/components/showcase/*` is a component gallery only. It isn't part of any feature.
 
@@ -90,15 +90,15 @@ Filters and Ask Crew live in separate folders, so they can be two separate sessi
 
 Chat with an OpenRouter model about the destinations in the feed. Replies stream token by token.
 
-| File                                          | Role                                                                                                                                   |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `ask-crew-sheet/index.tsx`                    | Sheet wrapper. Passes the current snap to the body and dismisses the keyboard below full height.                                       |
-| `ask-crew-sheet/ask-crew-sheet-body.tsx`      | Layout: header, messages (or empty state / missing-key notice), composer in `BottomSheetFooter`.                                      |
-| `ask-crew-sheet/chat/store.ts`                | Session chat store (in memory, outside the body): all chats of the session, the open chat, the draft; `sendMessage`, `stopReply`, `retryReply`, `startNewChat`, `openChat`. |
-| `ask-crew-sheet/chat/delta-buffer.ts`         | Batches streamed text to one UI update per 50 ms.                                                                                      |
-| `ask-crew-sheet/chat/system-prompt.ts`        | System prompt; lists the feed's destinations (`destinations.ts` fetches the feed JSON once per session, waits at most 3 s).             |
-| `ask-crew-sheet/components/*`                 | Slim header (icon buttons: All chats, new chat, close), chat list, inverted message list on `KeyboardChatScrollView`, bubbles (with the "Thinking…" indicator), composer on `KeyboardStickyView`. |
-| `src/components/settings/open-router/*`       | Settings: OpenRouter key (checked with `GET /key` before saving) and the searchable model list (all text chat models, ~390).           |
+| File                                     | Role                                                                                                                                                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ask-crew-sheet/index.tsx`               | Sheet wrapper. Passes the current snap to the body and dismisses the keyboard below full height.                                                                                                  |
+| `ask-crew-sheet/ask-crew-sheet-body.tsx` | Layout: header, messages (or empty state / missing-key notice), composer in `BottomSheetFooter`.                                                                                                  |
+| `ask-crew-sheet/chat/store.ts`           | Session chat store (in memory, outside the body): all chats of the session, the open chat, the draft; `sendMessage`, `stopReply`, `retryReply`, `startNewChat`, `openChat`.                       |
+| `ask-crew-sheet/chat/delta-buffer.ts`    | Batches streamed text to one UI update per 50 ms.                                                                                                                                                 |
+| `ask-crew-sheet/chat/system-prompt.ts`   | System prompt; lists the feed's destinations (`destinations.ts` fetches the feed JSON once per session, waits at most 3 s).                                                                       |
+| `ask-crew-sheet/components/*`            | Slim header (icon buttons: All chats, new chat, close), chat list, inverted message list on `KeyboardChatScrollView`, bubbles (with the "Thinking…" indicator), composer on `KeyboardStickyView`. |
+| `src/components/settings/open-router/*`  | Settings: OpenRouter key (checked with `GET /key` before saving) and the searchable model list (all text chat models, ~390).                                                                      |
 
 Decisions taken:
 
@@ -113,10 +113,10 @@ Decisions taken:
 - The input follows the keyboard only at full height. Touching the input expands the sheet (on touch-down, so the React commit happens before the keyboard event; see the iOS note in "Ask Crew: finish setup").
 
 -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `ask-crew-sheet/index.tsx`                   | Sheet wrapper. The body loads lazily on open and **unmounts after the close animation finishes** (`onClosed`). |
-| `ask-crew-sheet/ask-crew-sheet-body.tsx`     | **Build here.** Default export, receives `onSnapTo(snap)`.                                                     |
-| `ask-crew-sheet/ask-crew-sheet-fallback.tsx` | Shown while the body loads.                                                                                    |
-| `ask-crew-sheet/ask-crew-sheet.test.tsx`     | Lazy mount, unmount after close, reload on reopen.                                                             |
+| `ask-crew-sheet/index.tsx` | Sheet wrapper. The body loads lazily on open and **unmounts after the close animation finishes** (`onClosed`). |
+| `ask-crew-sheet/ask-crew-sheet-body.tsx` | **Build here.** Default export, receives `onSnapTo(snap)`. |
+| `ask-crew-sheet/ask-crew-sheet-fallback.tsx` | Shown while the body loads. |
+| `ask-crew-sheet/ask-crew-sheet.test.tsx` | Lazy mount, unmount after close, reload on reopen. |
 
 **Must keep holding**
 

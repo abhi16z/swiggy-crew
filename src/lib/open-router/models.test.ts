@@ -1,9 +1,9 @@
 import { fetch } from 'expo/fetch';
 
 import {
+  filterModels,
   formatPrice,
   loadChatModels,
-  matchesQuery,
   resetChatModelsCache,
   toChatModels,
 } from './models';
@@ -59,6 +59,7 @@ describe('toChatModels', () => {
       contextLength: null,
       promptPrice: 0,
       completionPrice: 0,
+      searchKey: 'x/y\nx/y',
     });
   });
 });
@@ -76,14 +77,18 @@ describe('formatPrice', () => {
   });
 });
 
-describe('matchesQuery', () => {
-  const [model] = toChatModels([RAW[0]]);
+describe('filterModels', () => {
+  const models = toChatModels(RAW);
+  const ids = (query: string) => filterModels(models, query).map((model) => model.id);
 
   it('matches the id or display name, ignoring case and surrounding spaces', () => {
-    expect(matchesQuery(model, '  OPUS ')).toBe(true);
-    expect(matchesQuery(model, 'anthropic/')).toBe(true);
-    expect(matchesQuery(model, 'gemini')).toBe(false);
-    expect(matchesQuery(model, '')).toBe(true);
+    expect(ids('  OPUS ')).toEqual(['anthropic/claude-opus-5']);
+    expect(ids('tiny:free')).toEqual(['acme/tiny:free']);
+    expect(ids('gemini')).toEqual([]);
+  });
+
+  it('returns every model for an empty query', () => {
+    expect(filterModels(models, '  ')).toBe(models);
   });
 });
 

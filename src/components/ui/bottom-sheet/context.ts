@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext } from 'react';
 import type { SharedValue } from 'react-native-reanimated';
 
 type BottomSheetContextValue = {
@@ -8,14 +8,6 @@ type BottomSheetContextValue = {
 };
 
 export const BottomSheetContext = createContext<BottomSheetContextValue | null>(null);
-
-export function useBottomSheetContextValue(
-  translateY: SharedValue<number>,
-  halfY: SharedValue<number>,
-  peekInset: number,
-) {
-  return useMemo(() => ({ translateY, halfY, peekInset }), [translateY, halfY, peekInset]);
-}
 
 export function useBottomSheetContext(caller: string) {
   const value = useContext(BottomSheetContext);

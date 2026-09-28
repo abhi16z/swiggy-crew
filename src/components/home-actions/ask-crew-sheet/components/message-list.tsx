@@ -11,8 +11,9 @@ function keyOf(message: ChatMessage) {
   return message.id;
 }
 
-function renderItem({ item }: ListRenderItemInfo<ChatMessage>) {
-  return <MessageBubble message={item} />;
+// The list is inverted, so index 0 is the chat's last message.
+function renderItem({ item, index }: ListRenderItemInfo<ChatMessage>) {
+  return <MessageBubble message={item} isLast={index === 0} />;
 }
 
 /**

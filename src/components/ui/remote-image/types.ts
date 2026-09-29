@@ -15,13 +15,17 @@ export type RemoteImageProps = {
   uri: string;
   /**
    * Tiny remote copy of the same image in the same aspect ratio, scaled up to fill the box while
-   * the full image loads. Must be remote; falls back to the bundled loading image when omitted.
+   * the full image loads. Must be remote. When omitted, `placeholderColor` alone is shown, or the
+   * bundled loading image if there is no color either.
    */
   loaderUri?: RemoteUri;
   /** Display size. Both are required so the layout never waits on the image. */
   width: DimensionValue;
   height: DimensionValue;
-  /** Low-fidelity color painted behind the image while it loads. */
+  /**
+   * Low-fidelity color painted behind the image while it loads. Without a `loaderUri` it is the
+   * whole placeholder: no loader image is fetched or decoded.
+   */
   placeholderColor?: string;
   borderRadius?: number;
   accessibilityLabel?: string;

@@ -1,8 +1,9 @@
 import { render, screen, userEvent } from '@testing-library/react-native';
 
 import { TripCard, type TripBundle } from '.';
+import { withLabels } from './utils';
 
-const SERENGETI: TripBundle = {
+const SERENGETI: TripBundle = withLabels({
   id: 'serengeti-1',
   destination: 'Serengeti',
   country: 'Tanzania',
@@ -21,16 +22,16 @@ const SERENGETI: TripBundle = {
     { id: 'serengeti-1-d2', day: 2, text: 'Walk the main sight with time to linger', icon: 'walk' },
     { id: 'serengeti-1-d3', day: 3, text: 'Safari jeep at sunset', icon: 'camera' },
   ],
-};
+});
 
-const KYOTO: TripBundle = {
+const KYOTO: TripBundle = withLabels({
   ...SERENGETI,
   id: 'kyoto-1',
   destination: 'Kyoto',
   country: 'Japan',
   kind: 'flight_stay',
   highlights: [{ id: 'kyoto-1-d1', day: 1, text: 'Higashiyama at dawn', icon: 'walk' }],
-};
+});
 
 describe('TripCard', () => {
   it('shows the trip summary with details closed', async () => {
@@ -42,8 +43,18 @@ describe('TripCard', () => {
     expect(screen.getByText('₹34,300')).toBeOnTheScreen();
     expect(screen.getByText('3 days · per person')).toBeOnTheScreen();
     expect(screen.getByLabelText('Rated 4.7 out of 5')).toBeOnTheScreen();
+    expect(screen.getByText('4.7')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Details for Serengeti' })).toBeCollapsed();
     expect(screen.queryByText('Day by day')).not.toBeOnTheScreen();
+  });
+
+  // Every card in the feed would otherwise fetch and decode a loader image while scrolling.
+  it('shows the hero image over its placeholder color, with no loader image', async () => {
+    await render(<TripCard trip={SERENGETI} />);
+
+    const image = screen.getByRole('image', { name: 'Serengeti, Tanzania' });
+    expect(image).toHaveProp('placeholder', []);
+    expect(image.parent).toHaveStyle({ backgroundColor: SERENGETI.image.placeholderColor });
   });
 
   it('opens and closes the day by day highlights from the Details button', async () => {

@@ -32,7 +32,7 @@ export function ImageShowcase() {
         accessibilityLabel={label}
       />
       <ImageCard
-        title="Bundled loader (no loaderUri)"
+        title="Placeholder color only (no loaderUri)"
         uri={`${uri}&card=bundled`}
         image={image}
         accessibilityLabel={label}

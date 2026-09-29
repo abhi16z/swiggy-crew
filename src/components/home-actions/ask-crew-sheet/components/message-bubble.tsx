@@ -27,9 +27,7 @@ export const MessageBubble = memo(function MessageBubble({ message, isLast }: Me
   if (message.role === 'user') {
     return (
       <View className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-neutral-900 px-4 py-2.5 dark:bg-white">
-        <Text selectable className="text-base text-white dark:text-black">
-          {message.content}
-        </Text>
+        <Text className="text-base text-white dark:text-black">{message.content}</Text>
       </View>
     );
   }
@@ -52,9 +50,7 @@ export const MessageBubble = memo(function MessageBubble({ message, isLast }: Me
     <View className="max-w-[92%] gap-1 self-start">
       {message.content !== '' ? (
         <View className="rounded-2xl rounded-bl-md bg-neutral-100 px-4 py-2.5 dark:bg-neutral-800">
-          <Text selectable className="text-base leading-6 text-black dark:text-white">
-            {message.content}
-          </Text>
+          <Text className="text-base leading-6 text-black dark:text-white">{message.content}</Text>
         </View>
       ) : null}
       {message.status === 'stopped' ? (

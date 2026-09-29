@@ -11,8 +11,8 @@ export type TripHighlight = {
   icon: HighlightIcon;
 };
 
-/** One travel bundle from `travel-bundles.json`. */
-export type TripBundle = {
+/** One travel bundle as it arrives in the trips JSON (`TRIPS_URL`). */
+export type TripBundleData = {
   id: string;
   destination: string;
   country: string;
@@ -23,6 +23,23 @@ export type TripBundle = {
   image: RemoteImageAsset;
   highlights: TripHighlight[];
 };
+
+/** Card text, formatted once when the trips load so scrolling never formats. */
+export type TripLabels = {
+  price: string;
+  duration: string;
+  rating: string;
+  ratingA11y: string;
+  image: string;
+  details: string;
+  highlights: string;
+};
+
+/**
+ * A trip as the app holds it. Build it only with `withLabels` (`parseTrips` does this for the
+ * feed): spreading a trip and changing a field keeps the old, now wrong, labels.
+ */
+export type TripBundle = TripBundleData & { labels: TripLabels };
 
 export type TripCardProps = {
   trip: TripBundle;

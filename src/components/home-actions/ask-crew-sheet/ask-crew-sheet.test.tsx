@@ -2,12 +2,11 @@ import { act, fireEvent, render, screen, userEvent } from '@testing-library/reac
 import { createRef } from 'react';
 import { Keyboard } from 'react-native';
 
-import type { BottomSheetRef } from '@/components/ui/bottom-sheet';
+import type { BottomSheetRef } from '@/components/ui/bottom-sheet/types';
 import { halfOffset } from '@/components/ui/bottom-sheet/utils';
-import { saveApiKey } from '@/lib/ai-settings';
-import { resetApiKeyStore } from '@/lib/ai-settings/api-key-store';
+import { resetApiKeyStore, saveApiKey } from '@/lib/ai-settings/api-key-store';
 
-import { AskCrewSheet } from '.';
+import { AskCrewSheet } from './ask-crew-sheet';
 
 jest.mock('expo-haptics');
 jest.mock('./chat/destinations', () => ({ loadDestinations: async () => [] }));

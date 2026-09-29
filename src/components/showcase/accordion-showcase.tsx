@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 
-import { Accordion } from '@/components/ui/accordion';
+import { Accordion } from '@/components/ui/accordion/accordion';
 
 export function AccordionShowcase() {
   return (

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
-import { loadApiKey, useApiKey, useApiKeyLoaded } from '@/lib/ai-settings';
+import { loadApiKey, useApiKey, useApiKeyLoaded } from '@/lib/ai-settings/api-key-store';
 
 import { ApiKeyField } from './api-key-field';
 import { ModelSetting } from './model-setting';

@@ -1,4 +1,4 @@
-import type { TripBundle } from '@/components/trip-card';
+import type { TripBundle } from '@/components/trip-card/types';
 import { withLabels } from '@/components/trip-card/utils';
 
 export const SHOWCASE_BUNDLE: TripBundle = withLabels({

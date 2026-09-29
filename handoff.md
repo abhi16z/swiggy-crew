@@ -38,9 +38,9 @@ Changing any of these affects every feature. Discuss the change first, and keep 
 
 **Files owned by this session**
 
-| File                                     | Role                                                                                                                |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `src/components/discover-feed/index.tsx` | Entry point. Exports `DiscoverFeed` (no props). Build the feed here and break it into sub-files inside this folder. |
+| File                                             | Role                                                                                                                |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `src/components/discover-feed/discover-feed.tsx` | Entry point. Exports `DiscoverFeed` (no props). Build the feed here and break it into sub-files inside this folder. |
 
 **Mounted by:** `src/app/index.tsx`, which renders `<DiscoverFeed />` then `<HomeActions />`. Don't add state to `HomeScreen`.
 
@@ -72,7 +72,7 @@ Filters and Ask Crew live in separate folders, so they can be two separate sessi
 
 | File                                                | Role                                                                                                                                                                                                                                      |
 | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/components/home-actions/index.tsx`             | `HomeActions`: both floating buttons, plus close-on-blur. Filters owns the Filters button; Ask Crew owns the Ask Crew button. Both live in this one file, so coordinate or split them into separate files first to avoid merge conflicts. |
+| `src/components/home-actions/home-actions.tsx`      | `HomeActions`: both floating buttons, plus close-on-blur. Filters owns the Filters button; Ask Crew owns the Ask Crew button. Both live in this one file, so coordinate or split them into separate files first to avoid merge conflicts. |
 | `src/components/home-actions/sheets.tsx`            | `HomeSheets`: mounts both sheets with their refs. Rarely needs changes.                                                                                                                                                                   |
 | `src/components/home-actions/sheet-refs.ts`         | `filtersSheetRef`, `askCrewSheetRef`.                                                                                                                                                                                                     |
 | `src/components/home-actions/home-actions.test.tsx` | Checks the buttons open sheets, stay in the bottom safe area, don't re-render Home, and close sheets on blur.                                                                                                                             |
@@ -81,7 +81,7 @@ Filters and Ask Crew live in separate folders, so they can be two separate sessi
 
 | File                                       | Role                                                                                    |
 | ------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `filters-sheet/index.tsx`                  | Sheet wrapper. The body loads lazily on first open and **stays mounted** after closing. |
+| `filters-sheet/filters-sheet.tsx`          | Sheet wrapper. The body loads lazily on first open and **stays mounted** after closing. |
 | `filters-sheet/filters-sheet-body.tsx`     | **Build here.** Default export, receives `onSnapTo(snap)`.                              |
 | `filters-sheet/filters-sheet-fallback.tsx` | Shown while the body loads.                                                             |
 | `filters-sheet/filters-sheet.test.tsx`     | Lazy mount and kept-mounted behaviour.                                                  |
@@ -92,7 +92,7 @@ Chat with an OpenRouter model about the destinations in the feed. Replies stream
 
 | File                                     | Role                                                                                                                                                                                              |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ask-crew-sheet/index.tsx`               | Sheet wrapper. Passes the current snap to the body and dismisses the keyboard below full height.                                                                                                  |
+| `ask-crew-sheet/ask-crew-sheet.tsx`      | Sheet wrapper. Passes the current snap to the body and dismisses the keyboard below full height.                                                                                                  |
 | `ask-crew-sheet/ask-crew-sheet-body.tsx` | Layout: header, messages (or empty state / missing-key notice), composer in `BottomSheetFooter`.                                                                                                  |
 | `ask-crew-sheet/chat/store.ts`           | Session chat store (in memory, outside the body): all chats of the session, the open chat, the draft; `sendMessage`, `stopReply`, `retryReply`, `startNewChat`, `openChat`.                       |
 | `ask-crew-sheet/chat/delta-buffer.ts`    | Batches streamed text to one UI update per 50 ms.                                                                                                                                                 |
@@ -113,7 +113,7 @@ Decisions taken:
 - The input follows the keyboard only at full height. Touching the input expands the sheet (on touch-down, so the React commit happens before the keyboard event; see the iOS note in "Ask Crew: finish setup").
 
 -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `ask-crew-sheet/index.tsx` | Sheet wrapper. The body loads lazily on open and **unmounts after the close animation finishes** (`onClosed`). |
+| `ask-crew-sheet/ask-crew-sheet.tsx` | Sheet wrapper. The body loads lazily on open and **unmounts after the close animation finishes** (`onClosed`). |
 | `ask-crew-sheet/ask-crew-sheet-body.tsx` | **Build here.** Default export, receives `onSnapTo(snap)`. |
 | `ask-crew-sheet/ask-crew-sheet-fallback.tsx` | Shown while the body loads. |
 | `ask-crew-sheet/ask-crew-sheet.test.tsx` | Lazy mount, unmount after close, reload on reopen. |
@@ -131,15 +131,15 @@ Decisions taken:
 
 **Files owned by this session**
 
-| File                                             | Role                                                                                                                                                                 |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/components/performance-panel/panel.tsx`     | **Build the HUD here.** Default export; loaded lazily the first time the panel is turned on.                                                                         |
-| `src/components/performance-panel/index.tsx`     | `PerformancePanel` host: returns `null` when hidden, otherwise an overlay pinned to the top safe area that passes touches through.                                   |
-| `src/components/performance-panel/store.ts`      | Zustand store saved to AsyncStorage under the key `performance-panel`. Exports `usePerformancePanelVisible()` and `setPerformancePanelVisible()`. Default is hidden. |
-| `src/components/performance-panel/store.test.ts` | Saving and restoring on launch.                                                                                                                                      |
-| `src/components/settings/index.tsx`              | Settings screen: a "Settings" heading, then the "Performance panel" switch.                                                                                          |
-| `src/components/settings/settings.test.tsx`      | The switch shows and hides the panel.                                                                                                                                |
-| `src/app/settings.tsx`                           | Route; renders `<Settings />`.                                                                                                                                       |
+| File                                                     | Role                                                                                                                                                                 |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/components/performance-panel/panel.tsx`             | **Build the HUD here.** Default export; loaded lazily the first time the panel is turned on.                                                                         |
+| `src/components/performance-panel/performance-panel.tsx` | `PerformancePanel` host: returns `null` when hidden, otherwise an overlay pinned to the top safe area that passes touches through.                                   |
+| `src/components/performance-panel/store.ts`              | Zustand store saved to AsyncStorage under the key `performance-panel`. Exports `usePerformancePanelVisible()` and `setPerformancePanelVisible()`. Default is hidden. |
+| `src/components/performance-panel/store.test.ts`         | Saving and restoring on launch.                                                                                                                                      |
+| `src/components/settings/settings.tsx`                   | Settings screen: a "Settings" heading, then the "Performance panel" switch.                                                                                          |
+| `src/components/settings/settings.test.tsx`              | The switch shows and hides the panel.                                                                                                                                |
+| `src/app/settings.tsx`                                   | Route; renders `<Settings />`.                                                                                                                                       |
 
 **Must keep holding**
 

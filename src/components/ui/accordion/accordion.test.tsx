@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, userEvent } from '@testing-library/reac
 import { Text } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { Accordion } from '.';
+import { Accordion } from './accordion';
 import { EXPAND_MS, REDUCE_MOTION_MS } from './constants';
 
 // Only the reduced-motion setting is replaced; animations stay real on Jest timers.

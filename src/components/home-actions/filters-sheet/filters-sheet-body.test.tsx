@@ -7,8 +7,8 @@ import FiltersSheetBody from './filters-sheet-body';
 
 // The body is rendered on its own here; the sheet reports how much of it is off screen at half.
 const MOCK_PEEK_INSET = 320;
-jest.mock('@/components/ui/bottom-sheet', () => ({
-  ...jest.requireActual<object>('@/components/ui/bottom-sheet'),
+jest.mock('@/components/ui/bottom-sheet/context', () => ({
+  ...jest.requireActual<object>('@/components/ui/bottom-sheet/context'),
   useBottomSheetPeekInset: () => MOCK_PEEK_INSET,
 }));
 

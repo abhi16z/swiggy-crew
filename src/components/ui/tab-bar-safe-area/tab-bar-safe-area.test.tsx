@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
-import { TabBarSafeArea } from '.';
+import { TabBarSafeArea } from './tab-bar-safe-area';
 
 // Jest resolves the iOS file by default; load the Android variant explicitly.
-const { TabBarSafeArea: AndroidTabBarSafeArea } =
-  jest.requireActual<typeof import('./index.android')>('./index.android');
+const { TabBarSafeArea: AndroidTabBarSafeArea } = jest.requireActual<
+  typeof import('./tab-bar-safe-area.android')
+>('./tab-bar-safe-area.android');
 
 // A plain View keeps the `edges` prop visible to the test.
 jest.mock('react-native-screens/experimental', () => ({

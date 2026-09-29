@@ -1,7 +1,8 @@
 import { memo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { formatPrice, type OpenRouterModel } from '@/lib/open-router';
+import { formatPrice } from '@/lib/open-router/models';
+import type { OpenRouterModel } from '@/lib/open-router/types';
 
 /** Fixed row height (`h-16`) so the list can skip measuring rows. */
 export const MODEL_ROW_HEIGHT = 64;

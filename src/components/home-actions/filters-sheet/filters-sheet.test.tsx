@@ -3,9 +3,9 @@ import { createRef } from 'react';
 
 import { useTripsStore } from '@/components/discover-feed/store';
 import { makeTrips } from '@/components/discover-feed/test-data';
-import type { BottomSheetRef } from '@/components/ui/bottom-sheet';
+import type { BottomSheetRef } from '@/components/ui/bottom-sheet/types';
 
-import { FiltersSheet } from '.';
+import { FiltersSheet } from './filters-sheet';
 
 jest.mock('expo-haptics');
 

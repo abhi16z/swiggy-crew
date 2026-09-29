@@ -1,4 +1,4 @@
-import { Settings } from '@/components/settings';
+import { Settings } from '@/components/settings/settings';
 
 export default function SettingsScreen() {
   return <Settings />;

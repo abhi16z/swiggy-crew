@@ -2,8 +2,9 @@ import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { useEffect, useMemo } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 
-import { TripCard, type TripBundle } from '@/components/trip-card';
-import { ScreenSafeArea } from '@/components/ui/screen-safe-area';
+import { TripCard } from '@/components/trip-card/trip-card';
+import type { TripBundle } from '@/components/trip-card/types';
+import { ScreenSafeArea } from '@/components/ui/screen-safe-area/screen-safe-area';
 
 import { FeedEmpty } from './feed-empty';
 import { FeedHeader } from './feed-header';

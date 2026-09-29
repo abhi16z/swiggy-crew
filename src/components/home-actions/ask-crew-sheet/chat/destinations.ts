@@ -1,5 +1,5 @@
 import { useTripsStore } from '@/components/discover-feed/store';
-import type { TripBundle } from '@/components/trip-card';
+import type { TripBundle } from '@/components/trip-card/types';
 
 /** Unique "Destination (Country)" labels, in feed order. */
 export function toDestinationList(trips: TripBundle[]): string[] {

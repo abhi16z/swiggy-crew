@@ -2,9 +2,9 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import * as Clipboard from 'expo-clipboard';
 import type { FrameInfo } from 'react-native-reanimated';
 
-import { PerformancePanel } from '.';
 import { COPIED_FEEDBACK_MS, HUD_COLORS } from './constants';
 import PerformancePanelBody from './panel';
+import { PerformancePanel } from './performance-panel';
 import { setPerformancePanelVisible, usePerformancePanelStore } from './store';
 
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));

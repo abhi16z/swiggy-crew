@@ -1,4 +1,4 @@
-import type { RemoteImageAsset } from '@/components/ui/remote-image';
+import type { RemoteImageAsset } from '@/components/ui/remote-image/types';
 
 export type TripKind = 'experience' | 'flight_stay' | 'villa';
 

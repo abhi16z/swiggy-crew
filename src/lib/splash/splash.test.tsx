@@ -2,7 +2,7 @@ import { render } from '@testing-library/react-native';
 import { SplashScreen } from 'expo-router';
 import { Text } from 'react-native';
 
-import { useHideSplashScreen } from '.';
+import { useHideSplashScreen } from './splash';
 
 jest.mock('expo-router', () => ({
   SplashScreen: { preventAutoHideAsync: jest.fn(async () => {}), hide: jest.fn() },

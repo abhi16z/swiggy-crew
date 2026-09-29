@@ -1,6 +1,7 @@
 import { render, screen, userEvent } from '@testing-library/react-native';
 
-import { TripCard, type TripBundle } from '.';
+import { TripCard } from './trip-card';
+import type { TripBundle } from './types';
 import { withLabels } from './utils';
 
 const SERENGETI: TripBundle = withLabels({

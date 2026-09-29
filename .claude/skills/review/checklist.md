@@ -18,7 +18,7 @@ Ask whether the change adds work on every frame, every render, or every tab visi
 ## 2. Where the code lives
 
 - UI, hooks, utils, constants, and types stay under `src/`. Reusable pieces go in `src/components/ui`.
-- A file past 300 lines, or a second component in the same file, gets split. ESLint enforces `max-lines` (300) and `react/no-multi-comp`. The bottom sheet is the pattern: `index.tsx`, `utils.ts`, `types.ts`, `constants.ts`.
+- A file past 300 lines, or a second component in the same file, gets split. ESLint enforces `max-lines` (300) and `react/no-multi-comp`. The bottom sheet is the pattern: `bottom-sheet.tsx`, `utils.ts`, `types.ts`, `constants.ts`.
 - Hooks stay inside the component that uses them. Do not move a `useEffect`, `useState` or other hook logic into a custom hook just to extract it. Extract a custom hook only when it is reused, or will clearly be reused, by more than one component.
   - When a component is too long, split it into smaller components first.
   - A single-use custom hook is acceptable only as a last resort: the file still fails `max-lines` after splitting into components is not practical.
@@ -45,7 +45,7 @@ The sheet and showcase already set the standard:
 
 ## 5. Tests
 
-- Tests sit next to the file: `bottom-sheet.test.tsx` beside `index.tsx`, `utils.test.ts` beside `utils.ts`. Routes under `src/app/` are not covered.
+- Tests sit next to the file: `bottom-sheet.test.tsx` beside `bottom-sheet.tsx`, `utils.test.ts` beside `utils.ts`. Routes under `src/app/` are not covered.
 - Cover the flow and the edge, not line count: first layout, snap changes, flick velocity, reduced motion, closed state, lazy mount.
 - React Native Testing Library v14 calls (`render`, `fireEvent`) are async and awaited. Native modules are mocked (`jest.mock('expo-haptics')` or `jest.setup.ts`).
 - A bug fix includes a test that fails before the fix.

@@ -1,5 +1,5 @@
 import type { TripFilter } from '@/components/discover-feed/types';
-import type { TripBundle } from '@/components/trip-card';
+import type { TripBundle } from '@/components/trip-card/types';
 
 /** Trips per filter card, in one pass over the trips. */
 export function countTripsByFilter(trips: TripBundle[]) {

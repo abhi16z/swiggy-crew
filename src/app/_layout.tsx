@@ -8,10 +8,11 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AppTabs from '@/components/app-tabs';
-import { HomeSheets } from '@/components/home-actions';
-import { OnboardingGate, useOnboardingHydrated } from '@/components/onboarding';
-import { PerformancePanel } from '@/components/performance-panel';
-import { useHideSplashScreen } from '@/lib/splash';
+import { HomeSheets } from '@/components/home-actions/sheets';
+import { OnboardingGate } from '@/components/onboarding/onboarding-gate';
+import { useOnboardingHydrated } from '@/components/onboarding/store';
+import { PerformancePanel } from '@/components/performance-panel/performance-panel';
+import { useHideSplashScreen } from '@/lib/splash/splash';
 
 // Order is paint order: sheets cover the tab bar, the performance panel covers the sheets, and
 // onboarding covers everything. KeyboardProvider drives keyboard-following UI (the Ask Crew

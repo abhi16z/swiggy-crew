@@ -3,9 +3,9 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SplashScreen } from 'expo-router';
 import { BackHandler } from 'react-native';
 
-import { useHideSplashScreen } from '@/lib/splash';
+import { useHideSplashScreen } from '@/lib/splash/splash';
 
-import { OnboardingGate } from '.';
+import { OnboardingGate } from './onboarding-gate';
 import { SLIDES } from './slides';
 import { ONBOARDING_STORAGE_KEY, useOnboardingHydrated, useOnboardingStore } from './store';
 

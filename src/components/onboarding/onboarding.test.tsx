@@ -1,10 +1,23 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { SplashScreen } from 'expo-router';
 import { BackHandler } from 'react-native';
+
+import { useHideSplashScreen } from '@/lib/splash';
 
 import { OnboardingGate } from '.';
 import { SLIDES } from './slides';
-import { ONBOARDING_STORAGE_KEY, useOnboardingStore } from './store';
+import { ONBOARDING_STORAGE_KEY, useOnboardingHydrated, useOnboardingStore } from './store';
+
+jest.mock('expo-router', () => ({
+  SplashScreen: { preventAutoHideAsync: jest.fn(async () => {}), hide: jest.fn() },
+}));
+
+// The root layout's splash handling, with only the onboarding under it.
+function RootLayout() {
+  useHideSplashScreen(useOnboardingHydrated());
+  return <OnboardingGate />;
+}
 
 async function storedCompleted() {
   const raw = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
@@ -42,6 +55,22 @@ describe('Onboarding', () => {
     expect(await renderFirstLaunch()).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Next' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Skip onboarding' })).toBeOnTheScreen();
+  });
+
+  // Regression: onboarding was lazy-loaded, so the splash hid before its code arrived and a
+  // white screen showed meanwhile (for seconds in dev, where Metro serves the chunk).
+  it('is on screen by the time the splash hides, with no blank screen between', async () => {
+    await useOnboardingStore.persist.rehydrate();
+    let onboardingMountedAtHide: boolean | undefined;
+    jest.mocked(SplashScreen.hide).mockImplementationOnce(() => {
+      // Onboarding registers its back handler when it mounts.
+      onboardingMountedAtHide = jest.mocked(BackHandler.addEventListener).mock.calls.length > 0;
+    });
+
+    await render(<RootLayout />);
+
+    expect(SplashScreen.hide).toHaveBeenCalledTimes(1);
+    expect(onboardingMountedAtHide).toBe(true);
   });
 
   it('walks through every page and finishes for good with Get started', async () => {

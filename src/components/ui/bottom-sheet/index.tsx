@@ -49,10 +49,6 @@ import {
   surfaceColor,
 } from './utils';
 
-export { useBottomSheetPeekInset } from './context';
-export { BottomSheetFooter } from './footer';
-export type { BottomSheetProps, BottomSheetRef, BottomSheetSnap } from './types';
-
 export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(function BottomSheet(
   { children, initialSnap = 'half', onSnapChange, onClosed },
   ref,

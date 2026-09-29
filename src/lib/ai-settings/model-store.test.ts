@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { DEFAULT_MODEL_ID } from '@/lib/open-router';
+import { DEFAULT_MODEL_ID } from '@/lib/open-router/constants';
 
 import { getModelId, MODEL_STORAGE_KEY, setModelId, useModelStore } from './model-store';
 

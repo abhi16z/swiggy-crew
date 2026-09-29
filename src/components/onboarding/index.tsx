@@ -3,8 +3,6 @@ import { View } from 'react-native';
 import Onboarding from './onboarding';
 import { useOnboardingHydrated, useOnboardingStore } from './store';
 
-export { replayOnboarding, useOnboardingHydrated } from './store';
-
 // App-wide overlay mounted last in the root layout, so it covers the tabs, sheets and
 // performance panel. Imported eagerly, not lazily: a lazy chunk arrives only after the splash
 // has hidden (slowly in dev, where Metro serves it over the network), leaving a blank screen.

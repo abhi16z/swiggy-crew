@@ -1,8 +1,5 @@
-import {
-  BottomSheet,
-  type BottomSheetRef,
-  type BottomSheetSnap,
-} from '@/components/ui/bottom-sheet';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
+import type { BottomSheetRef, BottomSheetSnap } from '@/components/ui/bottom-sheet/types';
 import {
   forwardRef,
   lazy,

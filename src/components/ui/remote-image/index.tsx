@@ -7,8 +7,6 @@ import { ERROR_ICON_SIZE, ERROR_IMAGE, FADE_IN_MS, LOADING_IMAGE } from './const
 import type { RemoteImageProps } from './types';
 import { assertRemoteLoaderUri } from './utils';
 
-export type { RemoteImageAsset, RemoteImageProps, RemoteUri } from './types';
-
 // The loader is a native placeholder, so a successful load causes no React render.
 // Only a failure renders, and it is keyed by `uri` so a recycled list cell retries a new image.
 export const RemoteImage = memo(function RemoteImage({

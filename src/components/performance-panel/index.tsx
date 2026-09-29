@@ -4,8 +4,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { usePerformancePanelVisible } from './store';
 
-export { setPerformancePanelVisible, usePerformancePanelVisible } from './store';
-
 const PerformancePanelBody = lazy(() => import('./panel'));
 
 // App-wide overlay mounted once in the root layout, above every tab and sheet.

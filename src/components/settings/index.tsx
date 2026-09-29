@@ -1,11 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, Switch, Text, useColorScheme, View } from 'react-native';
 
-import { replayOnboarding } from '@/components/onboarding';
+import { replayOnboarding } from '@/components/onboarding/store';
 import {
   setPerformancePanelVisible,
   usePerformancePanelVisible,
-} from '@/components/performance-panel';
+} from '@/components/performance-panel/store';
 import { ScreenSafeArea } from '@/components/ui/screen-safe-area';
 import { ICON_COLORS } from '@/constants/colors';
 

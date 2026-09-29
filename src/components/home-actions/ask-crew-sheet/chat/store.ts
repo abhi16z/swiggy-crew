@@ -1,7 +1,10 @@
 import { create } from 'zustand';
 
-import { getModelId, loadApiKey } from '@/lib/ai-settings';
-import { describeError, streamChat, type ChatMessageParam } from '@/lib/open-router';
+import { loadApiKey } from '@/lib/ai-settings/api-key-store';
+import { getModelId } from '@/lib/ai-settings/model-store';
+import { describeError } from '@/lib/open-router/errors';
+import { streamChat } from '@/lib/open-router/stream-chat';
+import type { ChatMessageParam } from '@/lib/open-router/types';
 
 import { HISTORY_LIMIT } from './constants';
 import { createDeltaBuffer } from './delta-buffer';

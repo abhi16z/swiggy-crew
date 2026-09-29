@@ -7,8 +7,6 @@ import { TabBarSafeArea } from '@/components/ui/tab-bar-safe-area';
 
 import { askCrewSheetRef, filtersSheetRef } from './sheet-refs';
 
-export { HomeSheets } from './sheets';
-
 // Floating Filters and Ask Crew buttons. The sheets they open live in the root layout
 // (`HomeSheets`), so pressing one never re-renders the Home screen or the feed beside it.
 export function HomeActions() {

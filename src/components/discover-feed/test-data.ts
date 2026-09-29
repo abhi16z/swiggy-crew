@@ -1,4 +1,4 @@
-import type { TripBundle, TripBundleData } from '@/components/trip-card';
+import type { TripBundle, TripBundleData } from '@/components/trip-card/types';
 import { withLabels } from '@/components/trip-card/utils';
 
 // Shared by the feed tests: `count` distinct trips named "Trip 1", "Trip 2", ... as they arrive

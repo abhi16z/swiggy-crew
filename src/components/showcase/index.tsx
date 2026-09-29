@@ -1,8 +1,5 @@
-import {
-  BottomSheet,
-  type BottomSheetRef,
-  type BottomSheetSnap,
-} from '@/components/ui/bottom-sheet';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
+import type { BottomSheetRef, BottomSheetSnap } from '@/components/ui/bottom-sheet/types';
 import {
   forwardRef,
   lazy,
@@ -20,8 +17,6 @@ const ShowcaseSheetBody = lazy(() => import('./sheet-body'));
 type ShowcaseSheetProps = {
   onSnapChange?: (snap: BottomSheetSnap) => void;
 };
-
-export type { BottomSheetRef, BottomSheetSnap };
 
 export const ShowcaseSheet = forwardRef<BottomSheetRef, ShowcaseSheetProps>(function ShowcaseSheet(
   { onSnapChange },

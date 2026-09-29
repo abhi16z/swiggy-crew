@@ -1,6 +1,6 @@
-import { removeApiKey, saveApiKey } from '@/lib/ai-settings';
-import { resetApiKeyStore } from '@/lib/ai-settings/api-key-store';
-import { OpenRouterError, streamChat } from '@/lib/open-router';
+import { removeApiKey, resetApiKeyStore, saveApiKey } from '@/lib/ai-settings/api-key-store';
+import { OpenRouterError } from '@/lib/open-router/errors';
+import { streamChat } from '@/lib/open-router/stream-chat';
 
 import { FLUSH_INTERVAL_MS } from './delta-buffer';
 import {
@@ -16,8 +16,10 @@ import {
 } from './store';
 import type { ChatMessage } from './types';
 
-jest.mock('@/lib/open-router', () => ({
-  ...jest.requireActual<typeof import('@/lib/open-router')>('@/lib/open-router'),
+jest.mock('@/lib/open-router/stream-chat', () => ({
+  ...jest.requireActual<typeof import('@/lib/open-router/stream-chat')>(
+    '@/lib/open-router/stream-chat',
+  ),
   streamChat: jest.fn(),
 }));
 

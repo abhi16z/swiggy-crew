@@ -1,7 +1,8 @@
 import { act, fireEvent, render, screen, userEvent } from '@testing-library/react-native';
 import { createRef } from 'react';
 
-import { ShowcaseSheet, type BottomSheetRef } from '.';
+import type { BottomSheetRef } from '@/components/ui/bottom-sheet/types';
+import { ShowcaseSheet } from '.';
 
 jest.mock('expo-haptics');
 

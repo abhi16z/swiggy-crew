@@ -1,6 +1,10 @@
 import type { ComponentType } from 'react';
 
-import { ChatScene, FiltersScene, KeyScene, PanelScene, type SceneProps } from './scenes';
+import { ChatScene } from './scenes/chat-scene';
+import { FiltersScene } from './scenes/filters-scene';
+import { KeyScene } from './scenes/key-scene';
+import { PanelScene } from './scenes/panel-scene';
+import type { SceneProps } from './scenes/types';
 
 type Slide = {
   key: string;

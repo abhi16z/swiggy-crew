@@ -1,14 +1,23 @@
 import { act, render, screen, userEvent } from '@testing-library/react-native';
 
-import { getModelId, loadApiKey, saveApiKey, setModelId } from '@/lib/ai-settings';
-import { resetApiKeyStore } from '@/lib/ai-settings/api-key-store';
-import { DEFAULT_MODEL_ID, loadChatModels, OpenRouterError, verifyKey } from '@/lib/open-router';
+import { loadApiKey, resetApiKeyStore, saveApiKey } from '@/lib/ai-settings/api-key-store';
+import { getModelId, setModelId } from '@/lib/ai-settings/model-store';
+import { DEFAULT_MODEL_ID } from '@/lib/open-router/constants';
+import { OpenRouterError } from '@/lib/open-router/errors';
+import { loadChatModels } from '@/lib/open-router/models';
+import { verifyKey } from '@/lib/open-router/verify-key';
 
 import { OpenRouterSettings } from '.';
 
-jest.mock('@/lib/open-router', () => ({
-  ...jest.requireActual<typeof import('@/lib/open-router')>('@/lib/open-router'),
+jest.mock('@/lib/open-router/verify-key', () => ({
+  ...jest.requireActual<typeof import('@/lib/open-router/verify-key')>(
+    '@/lib/open-router/verify-key',
+  ),
   verifyKey: jest.fn(),
+}));
+
+jest.mock('@/lib/open-router/models', () => ({
+  ...jest.requireActual<typeof import('@/lib/open-router/models')>('@/lib/open-router/models'),
   loadChatModels: jest.fn(),
 }));
 

@@ -1,10 +1,10 @@
 import { act, fireEvent, render, screen, userEvent } from '@testing-library/react-native';
 import { createRef } from 'react';
 
-import type { BottomSheetRef } from '@/components/ui/bottom-sheet';
-import { removeApiKey, saveApiKey } from '@/lib/ai-settings';
-import { resetApiKeyStore } from '@/lib/ai-settings/api-key-store';
-import { OpenRouterError, streamChat } from '@/lib/open-router';
+import type { BottomSheetRef } from '@/components/ui/bottom-sheet/types';
+import { removeApiKey, resetApiKeyStore, saveApiKey } from '@/lib/ai-settings/api-key-store';
+import { OpenRouterError } from '@/lib/open-router/errors';
+import { streamChat } from '@/lib/open-router/stream-chat';
 
 import { AskCrewSheet } from '.';
 import { FLUSH_INTERVAL_MS } from './chat/delta-buffer';
@@ -12,8 +12,10 @@ import { resetChats } from './chat/store';
 
 jest.mock('expo-haptics');
 
-jest.mock('@/lib/open-router', () => ({
-  ...jest.requireActual<typeof import('@/lib/open-router')>('@/lib/open-router'),
+jest.mock('@/lib/open-router/stream-chat', () => ({
+  ...jest.requireActual<typeof import('@/lib/open-router/stream-chat')>(
+    '@/lib/open-router/stream-chat',
+  ),
   streamChat: jest.fn(),
 }));
 

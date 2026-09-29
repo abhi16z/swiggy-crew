@@ -1,6 +1,6 @@
 import { Pressable, Text, View } from 'react-native';
 
-import type { BottomSheetSnap } from '@/components/ui/bottom-sheet';
+import type { BottomSheetSnap } from '@/components/ui/bottom-sheet/types';
 
 type ShowcaseSheetBodyProps = {
   onSnapTo: (snap: BottomSheetSnap) => void;

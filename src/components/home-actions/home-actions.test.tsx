@@ -3,7 +3,8 @@ import { act, render, screen, userEvent, within } from '@testing-library/react-n
 import { useTripsStore } from '@/components/discover-feed/store';
 import type { AppliedFilters } from '@/components/discover-feed/types';
 
-import { HomeActions, HomeSheets } from '.';
+import { HomeActions } from '.';
+import { HomeSheets } from './sheets';
 
 const mockFiltersSnapTo = jest.fn();
 const mockAskCrewSnapTo = jest.fn();

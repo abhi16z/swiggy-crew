@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import {
-  BottomSheetFooter,
-  useBottomSheetPeekInset,
-  type BottomSheetSnap,
-} from '@/components/ui/bottom-sheet';
-import { loadApiKey, useApiKey, useApiKeyLoaded } from '@/lib/ai-settings';
+import { useBottomSheetPeekInset } from '@/components/ui/bottom-sheet/context';
+import { BottomSheetFooter } from '@/components/ui/bottom-sheet/footer';
+import type { BottomSheetSnap } from '@/components/ui/bottom-sheet/types';
+import { loadApiKey, useApiKey, useApiKeyLoaded } from '@/lib/ai-settings/api-key-store';
 
 import { loadDestinations } from './chat/destinations';
 import { openChat, startNewChat, useActiveHasMessages, useChatStore } from './chat/store';

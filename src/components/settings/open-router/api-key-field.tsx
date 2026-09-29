@@ -10,8 +10,9 @@ import {
 } from 'react-native';
 
 import { ICON_COLORS } from '@/constants/colors';
-import { maskApiKey, removeApiKey, saveApiKey } from '@/lib/ai-settings';
-import { describeError, isOpenRouterError, verifyKey } from '@/lib/open-router';
+import { maskApiKey, removeApiKey, saveApiKey } from '@/lib/ai-settings/api-key-store';
+import { describeError, isOpenRouterError } from '@/lib/open-router/errors';
+import { verifyKey } from '@/lib/open-router/verify-key';
 
 type ApiKeyFieldProps = {
   apiKey: string | null;

@@ -1,5 +1,5 @@
-import type { TripBundle, TripBundleData } from '@/components/trip-card';
 import { KIND_BADGES } from '@/components/trip-card/constants';
+import type { TripBundle, TripBundleData } from '@/components/trip-card/types';
 import { withLabels } from '@/components/trip-card/utils';
 
 import type { AppliedFilters, TripSort } from './types';

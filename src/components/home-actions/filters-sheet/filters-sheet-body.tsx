@@ -6,7 +6,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { useTripsStore } from '@/components/discover-feed/store';
 import { formatTripCount } from '@/components/discover-feed/utils';
 import { Accordion } from '@/components/ui/accordion';
-import { useBottomSheetPeekInset, type BottomSheetSnap } from '@/components/ui/bottom-sheet';
+import { useBottomSheetPeekInset } from '@/components/ui/bottom-sheet/context';
+import type { BottomSheetSnap } from '@/components/ui/bottom-sheet/types';
 import { ICON_COLORS } from '@/constants/colors';
 
 import { SORT_OPTIONS, TRIP_FILTER_OPTIONS } from './constants';

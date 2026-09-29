@@ -2,7 +2,10 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { createRef } from 'react';
 import { Text } from 'react-native';
 
-import { BottomSheet, BottomSheetFooter, type BottomSheetRef, useBottomSheetPeekInset } from '.';
+import { BottomSheet } from '.';
+import { useBottomSheetPeekInset } from './context';
+import { BottomSheetFooter } from './footer';
+import type { BottomSheetRef } from './types';
 
 jest.mock('expo-haptics');
 

@@ -5,8 +5,9 @@ import { BackHandler, Text } from 'react-native';
 import { State, type PanGesture } from 'react-native-gesture-handler';
 import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils';
 
-import { BottomSheet, type BottomSheetProps, type BottomSheetRef } from '.';
+import { BottomSheet } from '.';
 import { PAN_TEST_ID } from './constants';
+import type { BottomSheetProps, BottomSheetRef } from './types';
 
 jest.mock('expo-haptics');
 

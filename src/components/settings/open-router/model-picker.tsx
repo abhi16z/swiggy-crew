@@ -11,12 +11,9 @@ import {
 } from 'react-native';
 
 import { ICON_COLORS } from '@/constants/colors';
-import {
-  describeError,
-  filterModels,
-  loadChatModels,
-  type OpenRouterModel,
-} from '@/lib/open-router';
+import { describeError } from '@/lib/open-router/errors';
+import { filterModels, loadChatModels } from '@/lib/open-router/models';
+import type { OpenRouterModel } from '@/lib/open-router/types';
 
 import { MODEL_ROW_HEIGHT, ModelRow } from './model-row';
 

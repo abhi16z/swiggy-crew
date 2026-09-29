@@ -2,7 +2,8 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { OnboardingGate } from '@/components/onboarding';
 import { useOnboardingStore } from '@/components/onboarding/store';
-import { PerformancePanel, setPerformancePanelVisible } from '@/components/performance-panel';
+import { PerformancePanel } from '@/components/performance-panel';
+import { setPerformancePanelVisible } from '@/components/performance-panel/store';
 
 import { Settings } from '.';
 

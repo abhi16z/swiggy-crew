@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { TripBundle } from '@/components/trip-card';
+import type { TripBundle } from '@/components/trip-card/types';
 
 import { FETCH_TIMEOUT_MS, TRIPS_URL } from './constants';
 import type { AppliedFilters, FeedStatus } from './types';

@@ -9,8 +9,6 @@ import { CARD_IMAGE_HEIGHT, CARD_IMAGE_RADIUS, KIND_BADGES, STAR_COLOR } from '.
 import { TripDetails } from './trip-details';
 import type { TripCardProps } from './types';
 
-export type { TripBundle, TripBundleData, TripCardProps, TripHighlight, TripLabels } from './types';
-
 // Designs 01 (collapsed) and 03 (details open).
 export const TripCard = memo(function TripCard({ trip }: TripCardProps) {
   const { id, destination, country, kind, image, highlights, labels } = trip;

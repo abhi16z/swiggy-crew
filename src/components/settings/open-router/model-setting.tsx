@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { setModelId, useModelId } from '@/lib/ai-settings';
+import { setModelId, useModelId } from '@/lib/ai-settings/model-store';
 
 import { ModelPicker } from './model-picker';
 

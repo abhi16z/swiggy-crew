@@ -18,15 +18,17 @@ import {
 } from './constants';
 import { HighlightCard } from './highlight-card';
 import type { TripHighlight } from './types';
-import { formatHighlights, getActiveHighlight } from './utils';
+import { getActiveHighlight } from './utils';
 
 type TripDetailsProps = {
   highlights: TripHighlight[];
+  /** "3 highlights", formatted when the trips load. */
+  countLabel: string;
 };
 
 // Expanded "Day by day" section (design 03). The page dots follow the row on the UI thread,
 // so swiping through highlights never re-renders React.
-export function TripDetails({ highlights }: TripDetailsProps) {
+export function TripDetails({ highlights, countLabel }: TripDetailsProps) {
   const count = highlights.length;
   const activeIndex = useSharedValue(0);
   // With reduced motion the active dot jumps to its place instead of sliding.
@@ -53,9 +55,7 @@ export function TripDetails({ highlights }: TripDetailsProps) {
     <View className="mt-1.5 gap-3.5 rounded-2xl border border-neutral-200 bg-neutral-50 py-4 dark:border-neutral-800 dark:bg-neutral-950">
       <View className="flex-row items-center justify-between px-3.5">
         <Text className="text-base font-semibold text-neutral-900 dark:text-white">Day by day</Text>
-        <Text className="text-[15px] text-neutral-500 dark:text-neutral-400">
-          {formatHighlights(count)}
-        </Text>
+        <Text className="text-[15px] text-neutral-500 dark:text-neutral-400">{countLabel}</Text>
       </View>
 
       <Animated.ScrollView

@@ -1,6 +1,7 @@
 import { FETCH_TIMEOUT_MS } from '@/components/discover-feed/constants';
 import { useTripsStore } from '@/components/discover-feed/store';
-import { jsonResponse, makeTrips } from '@/components/discover-feed/test-data';
+import { jsonResponse, makeTripData } from '@/components/discover-feed/test-data';
+import { withLabels } from '@/components/trip-card/utils';
 
 import { DESTINATIONS_WAIT_MS } from './constants';
 import { loadDestinations, resetDestinationsCache, toDestinationList } from './destinations';
@@ -9,7 +10,7 @@ import { buildSystemPrompt, composeSystemPrompt } from './system-prompt';
 const realFetch = globalThis.fetch;
 const mockFetch = jest.fn<Promise<Response>, [string, RequestInit?]>();
 
-const [serengeti, bodhGaya, serengetiAgain, blank] = makeTrips(4);
+const [serengeti, bodhGaya, serengetiAgain, blank] = makeTripData(4);
 const TRIPS = [
   { ...serengeti, destination: 'Serengeti', country: 'Tanzania' },
   { ...bodhGaya, destination: 'Bodh Gaya', country: 'India' },
@@ -30,7 +31,10 @@ afterEach(() => {
 
 describe('toDestinationList', () => {
   it('lists each destination once with its country, in feed order, skipping blank names', () => {
-    expect(toDestinationList(TRIPS)).toEqual(['Serengeti (Tanzania)', 'Bodh Gaya (India)']);
+    expect(toDestinationList(TRIPS.map(withLabels))).toEqual([
+      'Serengeti (Tanzania)',
+      'Bodh Gaya (India)',
+    ]);
   });
 });
 

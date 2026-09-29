@@ -32,18 +32,33 @@ async function failLoad() {
 }
 
 describe('RemoteImage', () => {
-  it('reserves its size and falls back to the bundled loading image when no loader is given', async () => {
+  // The color is enough: no loader image to fetch and decode for every card.
+  it('reserves its size and shows only the placeholder color when no loader is given', async () => {
     await renderImage();
 
     const image = screen.getByTestId('hero');
-    expect(image).toHaveProp('placeholder', [LOADING_IMAGE]);
+    expect(image).toHaveProp('placeholder', []);
     expect(image).toHaveProp('contentFit', 'cover');
     expect(image.parent).toHaveStyle({ width: '100%', height: 208, backgroundColor: '#8a5436' });
   });
 
-  it('shows the remote loader while the full image loads', async () => {
+  it('falls back to the bundled loading image with neither a loader nor a color', async () => {
+    await render(<RemoteImage uri={URI} width={344} height={208} testID="hero" />);
+
+    expect(screen.getByTestId('hero')).toHaveProp('placeholder', [LOADING_IMAGE]);
+  });
+
+  // The color only paints behind; it must not replace a loader that was asked for.
+  it('shows the remote loader while the full image loads, even with a placeholder color', async () => {
     await render(
-      <RemoteImage uri={URI} loaderUri={LOADER_URI} width={344} height={208} testID="hero" />,
+      <RemoteImage
+        uri={URI}
+        loaderUri={LOADER_URI}
+        width={344}
+        height={208}
+        placeholderColor="#8a5436"
+        testID="hero"
+      />,
     );
 
     expect(screen.getByTestId('hero')).toHaveProp('placeholder', [

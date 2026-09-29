@@ -1,6 +1,7 @@
 import type { TripBundle } from '@/components/trip-card';
+import { withLabels } from '@/components/trip-card/utils';
 
-export const SHOWCASE_BUNDLE: TripBundle = {
+export const SHOWCASE_BUNDLE: TripBundle = withLabels({
   id: 'serengeti-1',
   destination: 'Serengeti',
   country: 'Tanzania',
@@ -24,7 +25,7 @@ export const SHOWCASE_BUNDLE: TripBundle = {
       icon: 'camera',
     },
   ],
-};
+});
 
 // Same image path with a file name that does not exist, to show the failure state.
 export const SHOWCASE_BROKEN_IMAGE_URL = 'https://ik.imagekit.io/a16xyz/crew/missing.jpg';

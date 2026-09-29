@@ -1,7 +1,5 @@
-import type { RemoteUri } from '@/components/ui/remote-image';
-
-import { FALLBACK_HIGHLIGHT_ICON, HIGHLIGHT_ICONS, LOADER_TRANSFORM } from './constants';
-import type { TripBundle } from './types';
+import { FALLBACK_HIGHLIGHT_ICON, HIGHLIGHT_ICONS } from './constants';
+import type { TripBundle, TripBundleData } from './types';
 
 const CURRENCY_SYMBOLS: Partial<Record<string, string>> = { INR: '₹' };
 
@@ -13,7 +11,7 @@ function groupIndian(amount: number) {
   return `${head},${digits.slice(-3)}`;
 }
 
-export function formatPrice({ amount, currency }: TripBundle['price']) {
+export function formatPrice({ amount, currency }: TripBundleData['price']) {
   const symbol = CURRENCY_SYMBOLS[currency];
   return symbol ? `${symbol}${groupIndian(amount)}` : `${currency} ${groupIndian(amount)}`;
 }
@@ -26,11 +24,22 @@ export function formatHighlights(count: number) {
   return count === 1 ? '1 highlight' : `${count} highlights`;
 }
 
-/** The same ImageKit image at 45x25, or `undefined` when the url has no size transform. */
-export function getLoaderUri(url: string): RemoteUri | undefined {
-  const loader = url.replace(/tr=w-\d+,h-\d+/, LOADER_TRANSFORM);
-  if (loader === url || !loader.startsWith('https://')) return undefined;
-  return loader as RemoteUri;
+/** The trip with its card text formatted, so a card only reads strings while scrolling. */
+export function withLabels(trip: TripBundleData): TripBundle {
+  const { destination, country, price, duration, rating, highlights } = trip;
+  const ratingText = rating.toFixed(1);
+  return {
+    ...trip,
+    labels: {
+      price: formatPrice(price),
+      duration: `${formatDays(duration.days)} · per person`,
+      rating: ratingText,
+      ratingA11y: `Rated ${ratingText} out of 5`,
+      image: `${destination}, ${country}`,
+      details: `Details for ${destination}`,
+      highlights: formatHighlights(highlights.length),
+    },
+  };
 }
 
 export function getHighlightIcon(icon: string) {

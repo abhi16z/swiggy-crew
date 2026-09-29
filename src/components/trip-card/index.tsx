@@ -8,13 +8,12 @@ import { ICON_COLORS } from '@/constants/colors';
 import { CARD_IMAGE_HEIGHT, CARD_IMAGE_RADIUS, KIND_BADGES, STAR_COLOR } from './constants';
 import { TripDetails } from './trip-details';
 import type { TripCardProps } from './types';
-import { formatDays, formatPrice, getLoaderUri } from './utils';
 
-export type { TripBundle, TripCardProps, TripHighlight } from './types';
+export type { TripBundle, TripBundleData, TripCardProps, TripHighlight, TripLabels } from './types';
 
 // Designs 01 (collapsed) and 03 (details open).
 export const TripCard = memo(function TripCard({ trip }: TripCardProps) {
-  const { id, destination, country, kind, price, duration, rating, image, highlights } = trip;
+  const { id, destination, country, kind, image, highlights, labels } = trip;
   const colors = ICON_COLORS[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const badge = KIND_BADGES[kind];
 
@@ -31,12 +30,11 @@ export const TripCard = memo(function TripCard({ trip }: TripCardProps) {
       <View>
         <RemoteImage
           uri={image.url}
-          loaderUri={getLoaderUri(image.url)}
           width="100%"
           height={CARD_IMAGE_HEIGHT}
           borderRadius={CARD_IMAGE_RADIUS}
           placeholderColor={image.placeholderColor}
-          accessibilityLabel={`${destination}, ${country}`}
+          accessibilityLabel={labels.image}
         />
         {badge ? (
           <View className="absolute top-3 left-3 flex-row items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5">
@@ -58,12 +56,12 @@ export const TripCard = memo(function TripCard({ trip }: TripCardProps) {
           </View>
           <View
             accessible
-            accessibilityLabel={`Rated ${rating.toFixed(1)} out of 5`}
+            accessibilityLabel={labels.ratingA11y}
             className="flex-row items-center gap-1 pt-1"
           >
             <Ionicons name="star" size={14} color={STAR_COLOR} />
             <Text className="text-base font-semibold text-neutral-900 dark:text-white">
-              {rating.toFixed(1)}
+              {labels.rating}
             </Text>
           </View>
         </View>
@@ -71,18 +69,18 @@ export const TripCard = memo(function TripCard({ trip }: TripCardProps) {
         <View className="flex-row items-center justify-between gap-3">
           <View className="flex-1 gap-0.5">
             <Text className="text-lg font-bold text-neutral-900 dark:text-white">
-              {formatPrice(price)}
+              {labels.price}
             </Text>
             <View className="flex-row items-center gap-1.5">
               <Ionicons name="time-outline" size={14} color={colors.muted} />
               <Text className="text-sm text-neutral-500 dark:text-neutral-400">
-                {formatDays(duration.days)} · per person
+                {labels.duration}
               </Text>
             </View>
           </View>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Details for ${destination}`}
+            accessibilityLabel={labels.details}
             accessibilityState={{ expanded }}
             onPress={toggleDetails}
             className={`min-h-11 flex-row items-center gap-2 rounded-full border border-neutral-200 px-5 active:opacity-70 dark:border-neutral-700 ${
@@ -101,7 +99,7 @@ export const TripCard = memo(function TripCard({ trip }: TripCardProps) {
         </View>
       </View>
 
-      {expanded ? <TripDetails highlights={highlights} /> : null}
+      {expanded ? <TripDetails highlights={highlights} countLabel={labels.highlights} /> : null}
     </View>
   );
 });

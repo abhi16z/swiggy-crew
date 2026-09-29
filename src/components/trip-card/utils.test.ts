@@ -5,7 +5,7 @@ import {
   formatPrice,
   getActiveHighlight,
   getHighlightIcon,
-  getLoaderUri,
+  withLabels,
 } from './utils';
 
 describe('formatPrice', () => {
@@ -31,18 +31,6 @@ it('uses the singular for a one day trip', () => {
 it('uses the singular for a trip with one highlight', () => {
   expect(formatHighlights(1)).toBe('1 highlight');
   expect(formatHighlights(3)).toBe('3 highlights');
-});
-
-describe('getLoaderUri', () => {
-  it('asks ImageKit for a tiny copy of the same image', () => {
-    expect(getLoaderUri('https://ik.imagekit.io/a16xyz/crew/1.jpg?tr=w-1280,h-720')).toBe(
-      'https://ik.imagekit.io/a16xyz/crew/1.jpg?tr=w-45,h-25',
-    );
-  });
-
-  it('gives no loader when the url has no size transform', () => {
-    expect(getLoaderUri('https://example.com/photo.jpg')).toBeUndefined();
-  });
 });
 
 describe('getActiveHighlight', () => {
@@ -74,4 +62,29 @@ describe('getActiveHighlight', () => {
 it('uses a fallback icon for highlight icons it does not know', () => {
   expect(getHighlightIcon('balloon')).toBe(FALLBACK_HIGHLIGHT_ICON);
   expect(getHighlightIcon('boat')).toBe('boat-outline');
+});
+
+// Cards read these while scrolling, so they must match what the card used to format itself.
+it('formats every card label once, from the trip data', () => {
+  const trip = withLabels({
+    id: 'kyoto-1',
+    destination: 'Kyoto',
+    country: 'Japan',
+    kind: 'flight_stay',
+    price: { amount: 148000, currency: 'INR' },
+    duration: { nights: 0, days: 1 },
+    rating: 5,
+    image: { url: 'https://example.com/1.jpg', width: 688, height: 416, placeholderColor: '#000' },
+    highlights: [{ id: 'kyoto-1-d1', day: 1, text: 'Higashiyama at dawn', icon: 'walk' }],
+  });
+
+  expect(trip.labels).toEqual({
+    price: '₹1,48,000',
+    duration: '1 day · per person',
+    rating: '5.0',
+    ratingA11y: 'Rated 5.0 out of 5',
+    image: 'Kyoto, Japan',
+    details: 'Details for Kyoto',
+    highlights: '1 highlight',
+  });
 });

@@ -3,7 +3,7 @@ import { act, render, screen, userEvent, within } from '@testing-library/react-n
 import { DiscoverFeed } from '.';
 import { SKELETON_COUNT } from './constants';
 import { useTripsStore } from './store';
-import { jsonResponse, makeTrips } from './test-data';
+import { jsonResponse, makeTripData } from './test-data';
 
 const realFetch = globalThis.fetch;
 const mockFetch = jest.fn<Promise<Response>, [string, RequestInit?]>();
@@ -39,7 +39,7 @@ describe('DiscoverFeed', () => {
 
   // Regression: on iOS the header was drawn under the status bar clock.
   it('keeps the feed below the status bar', async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(1)));
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTripData(1)));
 
     await render(<DiscoverFeed />);
 
@@ -51,7 +51,7 @@ describe('DiscoverFeed', () => {
   });
 
   it('shows the trips and their count once loaded', async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(3)));
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTripData(3)));
 
     await render(<DiscoverFeed />);
 
@@ -66,7 +66,7 @@ describe('DiscoverFeed', () => {
 
   // Cards are heavy; mounting all of a long feed at once would stall a low-end phone.
   it('builds only the cards near the screen in a long feed', async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(120)));
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTripData(120)));
 
     await render(<DiscoverFeed />);
 
@@ -79,7 +79,7 @@ describe('DiscoverFeed', () => {
     const user = userEvent.setup();
     mockFetch
       .mockRejectedValueOnce(new TypeError('Network request failed'))
-      .mockResolvedValueOnce(jsonResponse(makeTrips(2)));
+      .mockResolvedValueOnce(jsonResponse(makeTripData(2)));
 
     await render(<DiscoverFeed />);
     await user.press(await screen.findByRole('button', { name: 'Retry' }));
@@ -98,7 +98,7 @@ describe('DiscoverFeed', () => {
 
   // New filters start a new list, so it opens at the top of the new set of trips.
   it('starts a new list with only the applied trip type when filters are applied', async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(4, ['villa', 'experience'])));
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTripData(4, ['villa', 'experience'])));
     await render(<DiscoverFeed />);
     const loadingList = screen.getByTestId('trip-feed');
     await screen.findByText('4 trips');
@@ -117,7 +117,7 @@ describe('DiscoverFeed', () => {
   });
 
   it('starts a new list when only the sort changes', async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(2)));
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTripData(2)));
     await render(<DiscoverFeed />);
     await screen.findByText('2 trips');
     const list = screen.getByTestId('trip-feed');
@@ -130,7 +130,7 @@ describe('DiscoverFeed', () => {
   });
 
   it('says so when the applied trip type has no trips', async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(2, ['villa'])));
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTripData(2, ['villa'])));
     await render(<DiscoverFeed />);
     await screen.findByText('2 trips');
 
@@ -144,7 +144,7 @@ describe('DiscoverFeed', () => {
 
   // If the screen is ever remounted (e.g. a tab switch), the stored trips show without a refetch.
   it('reuses the loaded trips when mounted again', async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(2)));
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTripData(2)));
     await render(<DiscoverFeed />);
     await screen.findByText('Trip 1');
 
@@ -157,7 +157,7 @@ describe('DiscoverFeed', () => {
 
   // Filters wait for the filters sheet to finish closing; the header says the list is updating.
   it('shows the loader instead of the count while new filters wait to be applied', async () => {
-    mockFetch.mockResolvedValueOnce(jsonResponse(makeTrips(3, ['villa', 'experience'])));
+    mockFetch.mockResolvedValueOnce(jsonResponse(makeTripData(3, ['villa', 'experience'])));
     await render(<DiscoverFeed />);
     await screen.findByText('3 trips');
 

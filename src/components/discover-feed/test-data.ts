@@ -1,11 +1,12 @@
-import type { TripBundle } from '@/components/trip-card';
+import type { TripBundle, TripBundleData } from '@/components/trip-card';
+import { withLabels } from '@/components/trip-card/utils';
 
-// Shared by the feed tests: `count` distinct trips named "Trip 1", "Trip 2", ...
-// Their kinds cycle through `kinds`.
-export function makeTrips(
+// Shared by the feed tests: `count` distinct trips named "Trip 1", "Trip 2", ... as they arrive
+// in the JSON, without labels. Use these for fetch payloads. Their kinds cycle through `kinds`.
+export function makeTripData(
   count: number,
   kinds: TripBundle['kind'][] = ['experience'],
-): TripBundle[] {
+): TripBundleData[] {
   return Array.from({ length: count }, (_, index) => ({
     id: `trip-${index + 1}`,
     destination: `Trip ${index + 1}`,
@@ -22,6 +23,11 @@ export function makeTrips(
     },
     highlights: [{ id: `trip-${index + 1}-d1`, day: 1, text: 'Arrive', icon: 'map' }],
   }));
+}
+
+/** The same trips as the store holds them, with card labels. */
+export function makeTrips(count: number, kinds?: TripBundle['kind'][]): TripBundle[] {
+  return makeTripData(count, kinds).map(withLabels);
 }
 
 /** Makes `fetch` answer once with this JSON body and status. */

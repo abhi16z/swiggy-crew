@@ -24,11 +24,9 @@ export const HIGHLIGHT_ICONS: Record<HighlightIcon, IoniconName> = {
 // Used when the data sends an icon this build doesn't know yet.
 export const FALLBACK_HIGHLIGHT_ICON: IoniconName = 'ellipse-outline';
 
-// ImageKit serves the same image at any size; 45x25 is ~0.5 KB and keeps the 16:9 shape.
-export const LOADER_TRANSFORM = 'tr=w-45,h-25';
-
 // Sizes from designs 01-03 (390pt wide screen): the card hero image is 208pt tall. Remote
-// images are 16:9, so they are cropped to cover.
+// images are 688x416, so they are cropped to cover. The JSON's image width/height still say
+// 1280x720 (the size before the images were shrunk); nothing reads them for layout.
 export const CARD_IMAGE_HEIGHT = 208;
 export const CARD_IMAGE_RADIUS = 16;
 

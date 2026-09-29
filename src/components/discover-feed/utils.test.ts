@@ -1,9 +1,20 @@
 import { makeTrips } from './test-data';
-import { formatTripCount, getVisibleTrips } from './utils';
+import { formatTripCount, getVisibleTrips, parseTrips } from './utils';
 
 it('uses the singular for one trip', () => {
   expect(formatTripCount(1)).toBe('1 trip');
   expect(formatTripCount(261)).toBe('261 trips');
+});
+
+// The JSON has no labels; cards only read them, so every parsed trip must carry them.
+it('formats the card labels of every trip it parses', () => {
+  const [trip] = makeTrips(1);
+  const { labels, ...raw } = trip;
+
+  const [parsed] = parseTrips(JSON.parse(JSON.stringify([raw])));
+
+  expect(parsed).toEqual(trip);
+  expect(parsed.labels).toMatchObject({ price: '₹34,300', details: 'Details for Trip 1' });
 });
 
 describe('getVisibleTrips', () => {

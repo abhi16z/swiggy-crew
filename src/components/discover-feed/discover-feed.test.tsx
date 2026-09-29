@@ -1,7 +1,7 @@
 import { act, render, screen, userEvent, within } from '@testing-library/react-native';
 
-import { DiscoverFeed } from '.';
 import { SKELETON_COUNT } from './constants';
+import { DiscoverFeed } from './discover-feed';
 import { useTripsStore } from './store';
 import { jsonResponse, makeTripData } from './test-data';
 

@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
 
 import { CARD_IMAGE_HEIGHT, CARD_IMAGE_RADIUS } from '@/components/trip-card/constants';
-import { RemoteImage } from '@/components/ui/remote-image';
+import { RemoteImage } from '@/components/ui/remote-image/remote-image';
 import type { RemoteImageAsset, RemoteUri } from '@/components/ui/remote-image/types';
 
 type ImageCardProps = {

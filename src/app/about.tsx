@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 
-import { ScreenSafeArea } from '@/components/ui/screen-safe-area';
+import { ScreenSafeArea } from '@/components/ui/screen-safe-area/screen-safe-area';
 
 export default function AboutScreen() {
   return (

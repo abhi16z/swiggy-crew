@@ -7,7 +7,7 @@ import { OpenRouterError } from '@/lib/open-router/errors';
 import { loadChatModels } from '@/lib/open-router/models';
 import { verifyKey } from '@/lib/open-router/verify-key';
 
-import { OpenRouterSettings } from '.';
+import { OpenRouterSettings } from './open-router';
 
 jest.mock('@/lib/open-router/verify-key', () => ({
   ...jest.requireActual<typeof import('@/lib/open-router/verify-key')>(

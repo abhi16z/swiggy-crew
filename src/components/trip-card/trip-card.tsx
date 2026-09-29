@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo, useCallback, useState } from 'react';
 import { Pressable, Text, useColorScheme, View } from 'react-native';
 
-import { RemoteImage } from '@/components/ui/remote-image';
+import { RemoteImage } from '@/components/ui/remote-image/remote-image';
 import { ICON_COLORS } from '@/constants/colors';
 
 import { CARD_IMAGE_HEIGHT, CARD_IMAGE_RADIUS, KIND_BADGES, STAR_COLOR } from './constants';

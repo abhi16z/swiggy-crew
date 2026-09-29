@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { RemoteImage } from '.';
 import { ERROR_IMAGE, FADE_IN_MS, LOADING_IMAGE } from './constants';
+import { RemoteImage } from './remote-image';
 
 // Only the reduced-motion setting is replaced.
 jest.mock('react-native-reanimated', () => ({

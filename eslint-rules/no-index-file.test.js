@@ -11,6 +11,7 @@ ruleTester.run('no-index-file', rule, {
     { code: 'export const a = 1;', filename: '/repo/src/lib/open-router/types.ts' },
     { code: 'export const a = 1;', filename: '/repo/src/lib/reindex.ts' },
     { code: 'export const a = 1;', filename: '/repo/src/lib/index-utils.ts' },
+    { code: 'export const a = 1;', filename: '/repo/src/components/app-tabs.web.tsx' },
   ],
   invalid: [
     {
@@ -26,6 +27,21 @@ ruleTester.run('no-index-file', rule, {
     {
       code: '',
       filename: '/repo/src/lib/splash/index.ts',
+      errors: [{ messageId: 'indexFile' }],
+    },
+    {
+      code: 'export const a = 1;',
+      filename: '/repo/src/components/ui/tab-bar-safe-area/index.android.tsx',
+      errors: [
+        {
+          message:
+            "Don't name files 'index.android.tsx'. Name it after its contents, e.g. 'tab-bar-safe-area/tab-bar-safe-area.android.tsx'.",
+        },
+      ],
+    },
+    {
+      code: 'export const a = 1;',
+      filename: '/repo/src/components/app-tabs/index.web.ts',
       errors: [{ messageId: 'indexFile' }],
     },
     {

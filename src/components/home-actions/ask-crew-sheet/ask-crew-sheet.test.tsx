@@ -6,7 +6,7 @@ import type { BottomSheetRef } from '@/components/ui/bottom-sheet/types';
 import { halfOffset } from '@/components/ui/bottom-sheet/utils';
 import { resetApiKeyStore, saveApiKey } from '@/lib/ai-settings/api-key-store';
 
-import { AskCrewSheet } from '.';
+import { AskCrewSheet } from './ask-crew-sheet';
 
 jest.mock('expo-haptics');
 jest.mock('./chat/destinations', () => ({ loadDestinations: async () => [] }));

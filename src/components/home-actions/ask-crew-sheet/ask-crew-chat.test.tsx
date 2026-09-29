@@ -6,7 +6,7 @@ import { removeApiKey, resetApiKeyStore, saveApiKey } from '@/lib/ai-settings/ap
 import { OpenRouterError } from '@/lib/open-router/errors';
 import { streamChat } from '@/lib/open-router/stream-chat';
 
-import { AskCrewSheet } from '.';
+import { AskCrewSheet } from './ask-crew-sheet';
 import { FLUSH_INTERVAL_MS } from './chat/delta-buffer';
 import { resetChats } from './chat/store';
 

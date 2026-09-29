@@ -5,7 +5,8 @@
  */
 const path = require('path');
 
-const INDEX_FILE = /^index\.[cm]?[jt]sx?$/;
+// Includes platform variants (index.android.tsx, index.web.ts, ...), which Metro resolves like index.
+const INDEX_FILE = /^index(\.(android|ios|native|web))?\.[cm]?[jt]sx?$/;
 
 /** @type {import('eslint').Rule.RuleModule} */
 module.exports = {
@@ -33,7 +34,7 @@ module.exports = {
           data: {
             name,
             folder: path.basename(path.dirname(context.filename)),
-            ext: path.extname(name),
+            ext: name.slice('index'.length),
           },
         });
       },

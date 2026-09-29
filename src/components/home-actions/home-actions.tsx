@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { useTripsStore } from '@/components/discover-feed/store';
-import { TabBarSafeArea } from '@/components/ui/tab-bar-safe-area';
+import { TabBarSafeArea } from '@/components/ui/tab-bar-safe-area/tab-bar-safe-area';
 
 import { askCrewSheetRef, filtersSheetRef } from './sheet-refs';
 

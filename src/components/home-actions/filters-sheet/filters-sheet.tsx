@@ -1,5 +1,5 @@
 import { useTripsStore } from '@/components/discover-feed/store';
-import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { BottomSheet } from '@/components/ui/bottom-sheet/bottom-sheet';
 import type { BottomSheetRef, BottomSheetSnap } from '@/components/ui/bottom-sheet/types';
 import {
   forwardRef,

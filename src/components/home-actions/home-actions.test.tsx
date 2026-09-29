@@ -3,7 +3,7 @@ import { act, render, screen, userEvent, within } from '@testing-library/react-n
 import { useTripsStore } from '@/components/discover-feed/store';
 import type { AppliedFilters } from '@/components/discover-feed/types';
 
-import { HomeActions } from '.';
+import { HomeActions } from './home-actions';
 import { HomeSheets } from './sheets';
 
 const mockFiltersSnapTo = jest.fn();
@@ -23,7 +23,7 @@ jest.mock('react-native-screens/experimental', () => ({
 }));
 
 // Stand-ins exposing only the imperative handle; each sheet has its own tests.
-jest.mock('./filters-sheet', () => {
+jest.mock('./filters-sheet/filters-sheet', () => {
   const { forwardRef, useImperativeHandle } = jest.requireActual<typeof import('react')>('react');
   return {
     FiltersSheet: forwardRef(function FiltersSheet(_props, ref) {
@@ -33,7 +33,7 @@ jest.mock('./filters-sheet', () => {
   };
 });
 
-jest.mock('./ask-crew-sheet', () => {
+jest.mock('./ask-crew-sheet/ask-crew-sheet', () => {
   const { forwardRef, useImperativeHandle } = jest.requireActual<typeof import('react')>('react');
   return {
     AskCrewSheet: forwardRef(function AskCrewSheet(_props, ref) {

@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
 
 import { TripCardSkeleton } from '@/components/discover-feed/trip-card-skeleton';
-import { TripCard } from '@/components/trip-card';
+import { TripCard } from '@/components/trip-card/trip-card';
 
 import { SHOWCASE_BUNDLE } from './data';
 

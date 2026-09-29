@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
-import { ShowcaseSheet } from '@/components/showcase';
 import { AccordionShowcase } from '@/components/showcase/accordion-showcase';
 import { ImageShowcase } from '@/components/showcase/image-showcase';
+import { ShowcaseSheet } from '@/components/showcase/showcase';
 import { TripCardShowcase } from '@/components/showcase/trip-card-showcase';
 import type { BottomSheetRef, BottomSheetSnap } from '@/components/ui/bottom-sheet/types';
-import { ScreenSafeArea } from '@/components/ui/screen-safe-area';
+import { ScreenSafeArea } from '@/components/ui/screen-safe-area/screen-safe-area';
 
 export default function ShowcaseScreen() {
   const sheetRef = useRef<BottomSheetRef>(null);

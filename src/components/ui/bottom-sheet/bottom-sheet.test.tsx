@@ -5,7 +5,7 @@ import { BackHandler, Text } from 'react-native';
 import { State, type PanGesture } from 'react-native-gesture-handler';
 import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils';
 
-import { BottomSheet } from '.';
+import { BottomSheet } from './bottom-sheet';
 import { PAN_TEST_ID } from './constants';
 import type { BottomSheetProps, BottomSheetRef } from './types';
 

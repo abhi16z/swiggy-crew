@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, userEvent } from '@testing-library/reac
 import { createRef } from 'react';
 
 import type { BottomSheetRef } from '@/components/ui/bottom-sheet/types';
-import { ShowcaseSheet } from '.';
+import { ShowcaseSheet } from './showcase';
 
 jest.mock('expo-haptics');
 

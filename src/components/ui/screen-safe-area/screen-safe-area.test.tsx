@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
-import { ScreenSafeArea } from '.';
+import { ScreenSafeArea } from './screen-safe-area';
 
 describe('ScreenSafeArea', () => {
   it('pads only the top, leaving the bottom to the tab bar', async () => {

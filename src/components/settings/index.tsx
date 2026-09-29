@@ -1,15 +1,19 @@
-import { Switch, Text, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Pressable, Switch, Text, useColorScheme, View } from 'react-native';
 
+import { replayOnboarding } from '@/components/onboarding';
 import {
   setPerformancePanelVisible,
   usePerformancePanelVisible,
 } from '@/components/performance-panel';
 import { ScreenSafeArea } from '@/components/ui/screen-safe-area';
+import { ICON_COLORS } from '@/constants/colors';
 
 import { OpenRouterSettings } from './open-router';
 
 export function Settings() {
   const performancePanelVisible = usePerformancePanelVisible();
+  const iconColor = ICON_COLORS[useColorScheme() === 'dark' ? 'dark' : 'light'].muted;
 
   return (
     <View className="flex-1 bg-white dark:bg-black">
@@ -30,6 +34,15 @@ export function Settings() {
               onValueChange={setPerformancePanelVisible}
             />
           </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Replay onboarding"
+            onPress={replayOnboarding}
+            className="min-h-11 flex-row items-center justify-between active:opacity-60"
+          >
+            <Text className="text-base text-black dark:text-white">Replay onboarding</Text>
+            <Ionicons name="play-circle-outline" size={22} color={iconColor} />
+          </Pressable>
           <OpenRouterSettings />
         </View>
       </ScreenSafeArea>

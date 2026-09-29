@@ -1,5 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
+import { OnboardingGate } from '@/components/onboarding';
+import { useOnboardingStore } from '@/components/onboarding/store';
 import { PerformancePanel, setPerformancePanelVisible } from '@/components/performance-panel';
 
 import { Settings } from '.';
@@ -59,5 +61,22 @@ describe('Settings', () => {
     expect(
       screen.queryByRole('button', { name: 'Expand performance panel' }),
     ).not.toBeOnTheScreen();
+  });
+
+  it('replays the onboarding over the app', async () => {
+    await useOnboardingStore.persist.rehydrate();
+    await act(async () => useOnboardingStore.setState({ completed: true }));
+    await render(
+      <>
+        <Settings />
+        <OnboardingGate />
+      </>,
+    );
+    expect(screen.queryByTestId('onboarding')).not.toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Replay onboarding' }));
+
+    expect(await screen.findByRole('button', { name: 'Skip onboarding' })).toBeOnTheScreen();
+    await act(async () => useOnboardingStore.setState({ completed: true }));
   });
 });
